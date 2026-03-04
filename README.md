@@ -1,6 +1,16 @@
 # Event Arena
 
-Minimal Kotlin/Spring Kafka arena for event-driven workshops.
+Event Arena is a Kotlin + Spring Kafka workshop system for practicing event-driven design in a playful setting.
+
+It simulates turn-based combat on a 2D board where autonomous fighters publish commands, the engine resolves outcomes, and consumers build projections from Kafka events.
+
+## Purpose and Features
+
+- Teach event-first thinking with clear command-vs-event semantics.
+- Provide a realistic, extensible domain for exercises (bots, UI, analytics, commentary, betting).
+- Demonstrate schema-governed messaging with Kafka + Schema Registry.
+- Include richer mechanics out of the box: ranged attacks, cover, pickups, and regeneration.
+- Keep architecture modular so participants can extend one service without needing to understand the entire stack.
 
 ## Documentation
 
@@ -9,6 +19,10 @@ Minimal Kotlin/Spring Kafka arena for event-driven workshops.
 - Board and turn rules: `docs/game-rules.md`
 - Local runbook: `docs/quickstart.md`
 - Contributor conventions and design principles: `AGENTS.md`
+
+## License
+
+This project is licensed under the Apache License 2.0. See `LICENSE`.
 
 ## Modules
 
