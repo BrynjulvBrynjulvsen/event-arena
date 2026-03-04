@@ -11,7 +11,6 @@ dependencies {
     implementation(project(":arena-domain"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.kafka)
-    implementation(libs.jackson.kotlin)
     implementation(libs.confluent.json.schema.serializer) {
         exclude(group = "org.apache.kafka", module = "kafka-clients")
     }

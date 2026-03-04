@@ -8,7 +8,27 @@
     "eventType": { "const": "TurnStarted" },
     "payload": {
       "type": "object",
-      "required": ["actingFighterId", "actingPosition", "targetFighterId", "targetPosition"]
+      "required": ["actingFighterId", "actingPosition", "targetFighterId", "targetPosition"],
+      "properties": {
+        "actingFighterId": { "type": "string" },
+        "targetFighterId": { "type": "string" },
+        "actingPosition": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" }
+          }
+        },
+        "targetPosition": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" }
+          }
+        }
+      }
     }
   }
 }

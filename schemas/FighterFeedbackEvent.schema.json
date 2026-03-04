@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "io.practicegroup.arena.domain.FighterFeedbackEvent",
+  "title": "FighterFeedbackEvent",
+  "type": "object",
+  "required": ["eventId", "eventType", "schemaVersion", "occurredAt", "matchId", "turn", "traceId", "payload"],
+  "properties": {
+    "eventType": { "const": "FighterFeedback" },
+    "payload": {
+      "type": "object",
+      "required": ["fighterId", "status"],
+      "properties": {
+        "fighterId": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["MOVE_ACCEPTED", "INVALID_MOVE", "TOO_LATE", "WRONG_TURN", "TURN_RESULTS"]
+        },
+        "actionType": {
+          "type": ["string", "null"],
+          "enum": ["MOVE_UP", "MOVE_DOWN", "MOVE_LEFT", "MOVE_RIGHT", "ATTACK", "WAIT", null]
+        },
+        "reasonCode": { "type": ["string", "null"] },
+        "actorEntityId": { "type": ["string", "null"] },
+        "worldVersion": { "type": ["integer", "null"] },
+        "entityChanges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["entityId", "entityType", "changeType"],
+            "properties": {
+              "entityId": { "type": "string" },
+              "entityType": {
+                "type": "string",
+                "enum": ["FIGHTER", "PROJECTILE", "ITEM", "COVER", "TERRAIN", "OBSTACLE"]
+              },
+              "faction": { "type": ["string", "null"] },
+              "changeType": {
+                "type": "string",
+                "enum": ["MOVED", "ATTRIBUTE", "STATE", "SPAWNED", "REMOVED"]
+              },
+              "position": {
+                "type": ["object", "null"],
+                "required": ["x", "y"],
+                "properties": {
+                  "x": { "type": "integer" },
+                  "y": { "type": "integer" }
+                }
+              },
+              "attributes": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

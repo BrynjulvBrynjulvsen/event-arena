@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "io.practicegroup.arena.domain.TurnClosedEvent",
+  "title": "TurnClosedEvent",
+  "type": "object",
+  "required": ["eventId", "eventType", "schemaVersion", "occurredAt", "matchId", "turn", "traceId", "payload"],
+  "properties": {
+    "eventType": { "const": "TurnClosed" },
+    "payload": {
+      "type": "object",
+      "required": ["actingFighterId", "selectedAction", "actionSource"],
+      "properties": {
+        "actingFighterId": { "type": "string" },
+        "selectedAction": {
+          "type": "string",
+          "enum": ["MOVE_UP", "MOVE_DOWN", "MOVE_LEFT", "MOVE_RIGHT", "ATTACK", "WAIT"]
+        },
+        "actionSource": { "type": "string" }
+      }
+    }
+  }
+}

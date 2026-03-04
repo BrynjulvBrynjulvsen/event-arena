@@ -3,7 +3,6 @@ package io.practicegroup.arena.domain
 import java.time.Clock
 import java.time.Instant
 import java.util.Random
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class ArenaMatchEngine(
@@ -13,8 +12,8 @@ class ArenaMatchEngine(
         val random = Random(spec.seed)
         val events = mutableListOf<ArenaEvent>()
 
-        var fighterA = FighterState(spec.fighterA, spec.fighterA.maxHp, spec.arenaMin)
-        var fighterB = FighterState(spec.fighterB, spec.fighterB.maxHp, spec.arenaMax)
+        var fighterA = FighterState(spec.fighterA, spec.fighterA.maxHp, Coordinate(0, 0))
+        var fighterB = FighterState(spec.fighterB, spec.fighterB.maxHp, Coordinate(spec.boardWidth - 1, spec.boardHeight - 1))
 
         val startsWithA = when {
             spec.fighterA.speed > spec.fighterB.speed -> true
@@ -69,7 +68,7 @@ class ArenaMatchEngine(
             )
 
             if (distance(actor.position, defender.position) > 1) {
-                val moved = moveTowards(actor, defender.position)
+                val moved = moveTowards(actor, defender.position, spec.boardWidth, spec.boardHeight)
                 events += FighterMovedEvent(
                     eventId = EventFactory.eventId(),
                     occurredAt = now(),
@@ -174,12 +173,36 @@ class ArenaMatchEngine(
         return (base * roll * critMultiplier).roundToInt().coerceAtLeast(1)
     }
 
-    private fun moveTowards(actor: FighterState, targetPosition: Int): FighterState {
-        val delta = if (targetPosition > actor.position) 1 else -1
-        return actor.copy(position = actor.position + delta)
+    private fun moveTowards(
+        actor: FighterState,
+        targetPosition: Coordinate,
+        boardWidth: Int,
+        boardHeight: Int
+    ): FighterState {
+        val dx = targetPosition.x - actor.position.x
+        val dy = targetPosition.y - actor.position.y
+        val next = if (kotlin.math.abs(dx) >= kotlin.math.abs(dy)) {
+            actor.position.copy(x = actor.position.x + dx.sign())
+        } else {
+            actor.position.copy(y = actor.position.y + dy.sign())
+        }
+
+        return actor.copy(
+            position = Coordinate(
+                x = next.x.coerceIn(0, boardWidth - 1),
+                y = next.y.coerceIn(0, boardHeight - 1)
+            )
+        )
     }
 
-    private fun distance(a: Int, b: Int): Int = abs(a - b)
+    private fun distance(a: Coordinate, b: Coordinate): Int =
+        kotlin.math.abs(a.x - b.x) + kotlin.math.abs(a.y - b.y)
+
+    private fun Int.sign(): Int = when {
+        this > 0 -> 1
+        this < 0 -> -1
+        else -> 0
+    }
 
     private fun now(): Instant = clock.instant()
 }

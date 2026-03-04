@@ -8,7 +8,26 @@
     "eventType": { "const": "FighterMoved" },
     "payload": {
       "type": "object",
-      "required": ["fighterId", "fromPosition", "toPosition"]
+      "required": ["fighterId", "fromPosition", "toPosition"],
+      "properties": {
+        "fighterId": { "type": "string" },
+        "fromPosition": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" }
+          }
+        },
+        "toPosition": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" }
+          }
+        }
+      }
     }
   }
 }

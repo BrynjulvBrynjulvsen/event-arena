@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "io.practicegroup.arena.domain.FighterActionCommand",
+  "title": "FighterActionCommand",
+  "type": "object",
+  "required": ["matchId", "turn", "fighterId", "actionType", "sentAt"],
+  "properties": {
+    "matchId": { "type": "string" },
+    "turn": { "type": "integer" },
+    "fighterId": { "type": "string" },
+    "actionType": {
+      "type": "string",
+      "enum": ["MOVE_UP", "MOVE_DOWN", "MOVE_LEFT", "MOVE_RIGHT", "ATTACK", "WAIT"]
+    },
+    "targetEntityId": { "type": ["string", "null"] },
+    "sentAt": { "type": "string", "format": "date-time" }
+  }
+}

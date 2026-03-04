@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "io.practicegroup.arena.domain.TurnOpenedEvent",
+  "title": "TurnOpenedEvent",
+  "type": "object",
+  "required": ["eventId", "eventType", "schemaVersion", "occurredAt", "matchId", "turn", "traceId", "payload"],
+  "properties": {
+    "eventType": { "const": "TurnOpened" },
+    "payload": {
+      "type": "object",
+      "required": ["actingFighterId", "targetFighterId", "actingPosition", "targetPosition", "turnDurationMs", "boardWidth", "boardHeight", "actorAttackRange", "visibleEntities"],
+      "properties": {
+        "actingFighterId": { "type": "string" },
+        "targetFighterId": { "type": "string" },
+        "turnDurationMs": { "type": "integer" },
+        "boardWidth": { "type": "integer" },
+        "boardHeight": { "type": "integer" },
+        "actorAttackRange": { "type": "integer" },
+        "actingPosition": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" }
+          }
+        },
+        "targetPosition": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" }
+          }
+        },
+        "visibleEntities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["entityId", "entityType", "position", "attributes"],
+            "properties": {
+              "entityId": { "type": "string" },
+              "entityType": {
+                "type": "string",
+                "enum": ["FIGHTER", "PROJECTILE", "ITEM", "COVER", "TERRAIN", "OBSTACLE"]
+              },
+              "faction": { "type": ["string", "null"] },
+              "position": {
+                "type": "object",
+                "required": ["x", "y"],
+                "properties": {
+                  "x": { "type": "integer" },
+                  "y": { "type": "integer" }
+                }
+              },
+              "attributes": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

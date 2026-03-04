@@ -2,6 +2,9 @@ server:
   port: 8080
 
 arena:
+  board:
+    width: 7
+    height: 5
   turn:
     duration-ms: 1000
     tick-check-ms: 100

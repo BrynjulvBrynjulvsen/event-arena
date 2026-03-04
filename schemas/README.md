@@ -1,11 +1,20 @@
-# Arena v1 Event Schemas
+# Schemas
 
-These JSON Schemas document the v1 event contract for the arena topic.
+Schema Registry is used for all Kafka value payloads.
 
-- Topic: `arena.match-events.v1`
-- Key: `matchId`
 - Subject strategy: `RecordNameStrategy`
 - Compatibility target: `BACKWARD_TRANSITIVE`
 
-In this skeleton, schemas are automatically registered by the producer in local development.
+Current functional event documentation is in:
+
+- `docs/event-model.md`
+
+Current schema set includes:
+
+- command schema: `FighterActionCommand.schema.json`
+- lifecycle schemas: `MatchScheduledEvent.schema.json`, `MatchStartedEvent.schema.json`, `TurnOpenedEvent.schema.json`, `TurnClosedEvent.schema.json`
+- combat schemas: `ActionResolvedEvent.schema.json`, `FighterMovedEvent.schema.json`, `AttackResolvedEvent.schema.json`, `DamageAppliedEvent.schema.json`, `MatchEndedEvent.schema.json`
+- feedback schema: `FighterFeedbackEvent.schema.json`
+
+In local development, producers auto-register schemas.
 For CI/prod, prefer explicit registration and set `auto.register.schemas=false`.

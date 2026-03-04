@@ -3,6 +3,8 @@ package io.practicegroup.arena.domain
 import java.time.Instant
 
 enum class FighterActionType {
+    MOVE_UP,
+    MOVE_DOWN,
     MOVE_LEFT,
     MOVE_RIGHT,
     ATTACK,
@@ -14,5 +16,6 @@ data class FighterActionCommand(
     val turn: Int,
     val fighterId: String,
     val actionType: FighterActionType,
+    val targetEntityId: String? = null,
     val sentAt: Instant = Instant.now()
 )

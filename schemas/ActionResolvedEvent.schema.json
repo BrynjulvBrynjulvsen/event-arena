@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "io.practicegroup.arena.domain.ActionResolvedEvent",
+  "title": "ActionResolvedEvent",
+  "type": "object",
+  "required": ["eventId", "eventType", "schemaVersion", "occurredAt", "matchId", "turn", "traceId", "payload"],
+  "properties": {
+    "eventType": { "const": "ActionResolved" },
+    "payload": {
+      "type": "object",
+      "required": ["actorEntityId", "actorEntityType", "actionType", "outcome", "effects"],
+      "properties": {
+        "actorEntityId": { "type": "string" },
+        "actorEntityType": {
+          "type": "string",
+          "enum": ["FIGHTER", "PROJECTILE", "ITEM", "COVER", "TERRAIN", "OBSTACLE"]
+        },
+        "actorFaction": { "type": ["string", "null"] },
+        "actionType": {
+          "type": "string",
+          "enum": ["MOVE_UP", "MOVE_DOWN", "MOVE_LEFT", "MOVE_RIGHT", "ATTACK", "WAIT"]
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["SUCCESS", "FAILED", "NO_OP"]
+        },
+        "effects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["effectType"],
+            "properties": {
+              "effectType": {
+                "type": "string",
+                "enum": ["MOVED", "DAMAGE", "HEAL", "APPLIED_STATUS", "REMOVED_STATUS", "SPAWNED", "DESPAWNED"]
+              },
+              "targetEntityId": { "type": ["string", "null"] },
+              "targetEntityType": {
+                "type": ["string", "null"],
+                "enum": ["FIGHTER", "PROJECTILE", "ITEM", "COVER", "TERRAIN", "OBSTACLE", null]
+              },
+              "targetFaction": { "type": ["string", "null"] },
+              "amount": { "type": ["integer", "null"] },
+              "critical": { "type": ["boolean", "null"] },
+              "fromPosition": {
+                "type": ["object", "null"],
+                "required": ["x", "y"],
+                "properties": {
+                  "x": { "type": "integer" },
+                  "y": { "type": "integer" }
+                }
+              },
+              "toPosition": {
+                "type": ["object", "null"],
+                "required": ["x", "y"],
+                "properties": {
+                  "x": { "type": "integer" },
+                  "y": { "type": "integer" }
+                }
+              },
+              "metadata": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

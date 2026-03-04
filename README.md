@@ -1,34 +1,23 @@
-# Event Arena v1 Skeleton
+# Event Arena
 
-Minimal Kotlin/Spring Kafka arena core for workshop exercises.
+Minimal Kotlin/Spring Kafka arena for event-driven workshops.
 
-## What is included
+## Documentation
 
-- `arena-domain`: deterministic turn-based arena engine and event types
-- `arena-engine`: Spring Boot producer app with `POST /matches`
-- `arena-fighter`: Spring Boot bot app; each instance controls one fighter
-- `arena-replay-cli`: Spring Boot consumer app that replays events from Kafka
-- `docker-compose.yml`: Kafka (KRaft) + Schema Registry + Kafka UI
-- `schemas/`: JSON schema documentation for v1 event contract
+- Start here: `docs/README.md`
+- Event model and topic contracts: `docs/event-model.md`
+- Board and turn rules: `docs/game-rules.md`
+- Local runbook: `docs/quickstart.md`
+- Contributor conventions and design principles: `AGENTS.md`
 
-## Eventing choices
+## Modules
 
-- Topic: `arena.match-events.v1`
-- Lifecycle topic: `arena.match-lifecycle.v1`
-- Key: `matchId`
-- Serializer: Confluent JSON Schema serializer
-- Subject strategy: `RecordNameStrategy`
-- Schema Registry: required in local setup
-- Kafka wiring uses Spring Boot property-based auto-configuration (`spring.kafka.*`)
-- `MatchOrchestrator` publishes via `ArenaEventPublisher` to keep orchestration decoupled from Spring Kafka APIs
+- `arena-domain`: shared domain model (fighters, actions, events)
+- `arena-engine`: turn coordinator and combat executor
+- `arena-fighter`: bot pilot service (one instance per fighter)
+- `arena-replay-cli`: sample read model / event timeline logger
 
-## Build/dependency conventions
-
-- Versions are centralized in `gradle/libs.versions.toml`
-- Spring dependencies use Gradle's native BOM support via `platform(org.springframework.boot:spring-boot-dependencies)`
-- `io.spring.dependency-management` is intentionally not used
-
-## Run locally
+## Run Locally
 
 1. Start Kafka stack:
 
@@ -67,6 +56,8 @@ docker compose up -d
 curl -X POST http://localhost:8080/matches -H "Content-Type: application/json" -d '{"seed":42}'
 ```
 
+Kafka UI is available on `http://localhost:8085`.
+
 ## Demo helper scripts
 
 Start two bots in the background (defaults: `balanced` and `glass-cannon`):
@@ -86,11 +77,3 @@ Stop background fighter processes:
 ```bash
 ./scripts/stop-demo-fighters.sh
 ```
-
-Kafka UI is available on `http://localhost:8085`.
-
-## Notes for workshop progression
-
-- This skeleton auto-registers schemas in local development.
-- For CI/prod, set `auto.register.schemas=false` and register schemas explicitly.
-- Keep schema changes additive to maintain backward compatibility.

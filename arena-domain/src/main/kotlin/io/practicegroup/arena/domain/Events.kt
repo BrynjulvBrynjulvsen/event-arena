@@ -122,6 +122,18 @@ data class TurnClosedEvent(
     val payload: TurnClosedPayload
 ) : ArenaEvent
 
+data class ActionResolvedEvent(
+    override val eventId: String,
+    override val eventType: String = "ActionResolved",
+    override val schemaVersion: Int = 1,
+    override val occurredAt: Instant,
+    override val matchId: String,
+    override val turn: Int,
+    override val traceId: String,
+    override val causationId: String? = null,
+    val payload: ActionResolvedPayload
+) : ArenaEvent
+
 data class FighterFeedbackEvent(
     override val eventId: String,
     override val eventType: String = "FighterFeedback",
@@ -146,8 +158,8 @@ data class MatchStartedPayload(
     val fighterBId: String,
     val fighterAStartHp: Int,
     val fighterBStartHp: Int,
-    val fighterAStartPosition: Int,
-    val fighterBStartPosition: Int,
+    val fighterAStartPosition: Coordinate,
+    val fighterBStartPosition: Coordinate,
     val startsWithFighterId: String,
     val seed: Long,
     val rulesetVersion: String = "v1"
@@ -155,15 +167,15 @@ data class MatchStartedPayload(
 
 data class TurnStartedPayload(
     val actingFighterId: String,
-    val actingPosition: Int,
+    val actingPosition: Coordinate,
     val targetFighterId: String,
-    val targetPosition: Int
+    val targetPosition: Coordinate
 )
 
 data class FighterMovedPayload(
     val fighterId: String,
-    val fromPosition: Int,
-    val toPosition: Int
+    val fromPosition: Coordinate,
+    val toPosition: Coordinate
 )
 
 data class AttackResolvedPayload(
@@ -191,15 +203,73 @@ data class MatchEndedPayload(
 data class TurnOpenedPayload(
     val actingFighterId: String,
     val targetFighterId: String,
-    val actingPosition: Int,
-    val targetPosition: Int,
-    val turnDurationMs: Long
+    val actingPosition: Coordinate,
+    val targetPosition: Coordinate,
+    val turnDurationMs: Long,
+    val boardWidth: Int,
+    val boardHeight: Int,
+    val actorAttackRange: Int,
+    val visibleEntities: List<EntitySnapshot> = emptyList()
 )
 
 data class TurnClosedPayload(
     val actingFighterId: String,
     val selectedAction: FighterActionType,
     val actionSource: String
+)
+
+data class EntitySnapshot(
+    val entityId: String,
+    val entityType: ArenaEntityType,
+    val faction: String? = null,
+    val position: Coordinate,
+    val attributes: Map<String, String> = emptyMap()
+)
+
+enum class ArenaEntityType {
+    FIGHTER,
+    PROJECTILE,
+    ITEM,
+    COVER,
+    TERRAIN,
+    OBSTACLE
+}
+
+enum class ActionOutcome {
+    SUCCESS,
+    FAILED,
+    NO_OP
+}
+
+enum class ActionEffectType {
+    MOVED,
+    DAMAGE,
+    HEAL,
+    APPLIED_STATUS,
+    REMOVED_STATUS,
+    SPAWNED,
+    DESPAWNED
+}
+
+data class ActionEffect(
+    val effectType: ActionEffectType,
+    val targetEntityId: String? = null,
+    val targetEntityType: ArenaEntityType? = null,
+    val targetFaction: String? = null,
+    val amount: Int? = null,
+    val critical: Boolean? = null,
+    val fromPosition: Coordinate? = null,
+    val toPosition: Coordinate? = null,
+    val metadata: Map<String, String> = emptyMap()
+)
+
+data class ActionResolvedPayload(
+    val actorEntityId: String,
+    val actorEntityType: ArenaEntityType,
+    val actorFaction: String? = null,
+    val actionType: FighterActionType,
+    val outcome: ActionOutcome,
+    val effects: List<ActionEffect> = emptyList()
 )
 
 enum class FighterFeedbackStatus {
@@ -210,12 +280,31 @@ enum class FighterFeedbackStatus {
     TURN_RESULTS
 }
 
+enum class EntityChangeType {
+    MOVED,
+    ATTRIBUTE,
+    STATE,
+    SPAWNED,
+    REMOVED
+}
+
+data class EntityChange(
+    val entityId: String,
+    val entityType: ArenaEntityType,
+    val faction: String? = null,
+    val changeType: EntityChangeType,
+    val position: Coordinate? = null,
+    val attributes: Map<String, String> = emptyMap()
+)
+
 data class FighterFeedbackPayload(
     val fighterId: String,
     val status: FighterFeedbackStatus,
     val actionType: FighterActionType? = null,
     val reasonCode: String? = null,
-    val details: String? = null
+    val actorEntityId: String? = null,
+    val worldVersion: Long? = null,
+    val entityChanges: List<EntityChange> = emptyList()
 )
 
 object EventFactory {

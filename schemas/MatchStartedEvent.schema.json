@@ -40,8 +40,22 @@
         "fighterBId": { "type": "string" },
         "fighterAStartHp": { "type": "integer" },
         "fighterBStartHp": { "type": "integer" },
-        "fighterAStartPosition": { "type": "integer" },
-        "fighterBStartPosition": { "type": "integer" },
+        "fighterAStartPosition": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" }
+          }
+        },
+        "fighterBStartPosition": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" }
+          }
+        },
         "startsWithFighterId": { "type": "string" },
         "seed": { "type": "integer" },
         "rulesetVersion": { "type": "string" }
