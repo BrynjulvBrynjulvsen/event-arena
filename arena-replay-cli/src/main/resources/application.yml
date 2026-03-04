@@ -1,0 +1,18 @@
+arena:
+  kafka:
+    topic: arena.match-events.v1
+
+spring:
+  main:
+    web-application-type: none
+    keep-alive: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: arena-replay-cli
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer
+      properties:
+        schema.registry.url: http://localhost:8081
+        specific.json.reader: false

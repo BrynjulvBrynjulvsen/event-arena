@@ -1,0 +1,30 @@
+arena:
+  fighter:
+    id: balanced
+    feedback-topic: ${arena.fighter.id}.feedback.v1
+  kafka:
+    lifecycle-topic: arena.match-lifecycle.v1
+
+spring:
+  main:
+    web-application-type: none
+    keep-alive: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: arena-fighter-${arena.fighter.id}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer
+      properties:
+        schema.registry.url: http://localhost:8081
+        specific.json.reader: false
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.json.KafkaJsonSchemaSerializer
+      properties:
+        schema.registry.url: http://localhost:8081
+        value.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
+        auto.register.schemas: true
+        use.latest.version: false
+        normalize.schemas: true

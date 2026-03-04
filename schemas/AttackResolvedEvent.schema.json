@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "io.practicegroup.arena.domain.AttackResolvedEvent",
+  "title": "AttackResolvedEvent",
+  "type": "object",
+  "required": ["eventId", "eventType", "schemaVersion", "occurredAt", "matchId", "turn", "traceId", "payload"],
+  "properties": {
+    "eventType": { "const": "AttackResolved" },
+    "payload": {
+      "type": "object",
+      "required": ["attackerId", "defenderId", "hit", "criticalHit", "damage"]
+    }
+  }
+}

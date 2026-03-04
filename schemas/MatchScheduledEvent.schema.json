@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "io.practicegroup.arena.domain.MatchScheduledEvent",
+  "title": "MatchScheduledEvent",
+  "type": "object",
+  "required": ["eventId", "eventType", "schemaVersion", "occurredAt", "matchId", "turn", "traceId", "payload"],
+  "properties": {
+    "eventType": { "const": "MatchScheduled" },
+    "payload": {
+      "type": "object",
+      "required": ["fighterAId", "fighterBId", "seed", "rulesetVersion"]
+    }
+  }
+}

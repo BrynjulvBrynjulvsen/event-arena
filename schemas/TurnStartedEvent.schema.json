@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "io.practicegroup.arena.domain.TurnStartedEvent",
+  "title": "TurnStartedEvent",
+  "type": "object",
+  "required": ["eventId", "eventType", "schemaVersion", "occurredAt", "matchId", "turn", "traceId", "payload"],
+  "properties": {
+    "eventType": { "const": "TurnStarted" },
+    "payload": {
+      "type": "object",
+      "required": ["actingFighterId", "actingPosition", "targetFighterId", "targetPosition"]
+    }
+  }
+}

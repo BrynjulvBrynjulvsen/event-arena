@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "io.practicegroup.arena.domain.MatchStartedEvent",
+  "title": "MatchStartedEvent",
+  "type": "object",
+  "required": [
+    "eventId",
+    "eventType",
+    "schemaVersion",
+    "occurredAt",
+    "matchId",
+    "turn",
+    "traceId",
+    "payload"
+  ],
+  "properties": {
+    "eventId": { "type": "string" },
+    "eventType": { "const": "MatchStarted" },
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "matchId": { "type": "string" },
+    "turn": { "type": "integer", "const": 0 },
+    "traceId": { "type": "string" },
+    "causationId": { "type": ["string", "null"] },
+    "payload": {
+      "type": "object",
+      "required": [
+        "fighterAId",
+        "fighterBId",
+        "fighterAStartHp",
+        "fighterBStartHp",
+        "fighterAStartPosition",
+        "fighterBStartPosition",
+        "startsWithFighterId",
+        "seed",
+        "rulesetVersion"
+      ],
+      "properties": {
+        "fighterAId": { "type": "string" },
+        "fighterBId": { "type": "string" },
+        "fighterAStartHp": { "type": "integer" },
+        "fighterBStartHp": { "type": "integer" },
+        "fighterAStartPosition": { "type": "integer" },
+        "fighterBStartPosition": { "type": "integer" },
+        "startsWithFighterId": { "type": "string" },
+        "seed": { "type": "integer" },
+        "rulesetVersion": { "type": "string" }
+      }
+    }
+  }
+}
