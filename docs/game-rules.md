@@ -62,10 +62,12 @@ damage = max(1, round(base * roll * critMultiplier))
   - `HEAL_20`: restore up to `20` HP (capped by max HP)
   - `ATTACK_BOOST_5`: adds `+5` attack for rest of match
 - Spawned pickups appear in `TurnOpened.payload.visibleEntities` as `entityType=ITEM`.
+- Pickup lifecycle is emitted in match events as `EntitySpawned` and `EntityRemoved` facts.
 
 ## Cover
 
 - Cover cells are static entities (`entityType=COVER`).
+- Cover entities are emitted as first-class `EntitySpawned` events at match start.
 - Fighters cannot move into cover cells.
 - A defender adjacent to cover receives hit chance and damage mitigation.
 

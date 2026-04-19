@@ -111,6 +111,8 @@ class MatchOrchestrator(
             )
         )
 
+        turnResolver.createInitialEntityEvents(state, now()).forEach { publishMatchEvent(it) }
+
         publishLifecycleEvent(turnResolver.createTurnOpenedEvent(state, now()))
 
         return StartMatchResponse(

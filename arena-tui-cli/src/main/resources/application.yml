@@ -1,0 +1,22 @@
+arena:
+  kafka:
+    topic: arena.match-events.v1
+  tui:
+    board-width: 7
+    board-height: 5
+    match-id:
+
+spring:
+  main:
+    web-application-type: none
+    keep-alive: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: arena-tui-cli
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer
+      properties:
+        schema.registry.url: http://localhost:8081
+        specific.json.reader: false

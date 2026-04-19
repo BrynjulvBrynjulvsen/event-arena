@@ -134,6 +134,30 @@ data class ActionResolvedEvent(
     val payload: ActionResolvedPayload
 ) : ArenaEvent
 
+data class EntitySpawnedEvent(
+    override val eventId: String,
+    override val eventType: String = "EntitySpawned",
+    override val schemaVersion: Int = 1,
+    override val occurredAt: Instant,
+    override val matchId: String,
+    override val turn: Int,
+    override val traceId: String,
+    override val causationId: String? = null,
+    val payload: EntitySpawnedPayload
+) : ArenaEvent
+
+data class EntityRemovedEvent(
+    override val eventId: String,
+    override val eventType: String = "EntityRemoved",
+    override val schemaVersion: Int = 1,
+    override val occurredAt: Instant,
+    override val matchId: String,
+    override val turn: Int,
+    override val traceId: String,
+    override val causationId: String? = null,
+    val payload: EntityRemovedPayload
+) : ArenaEvent
+
 data class FighterFeedbackEvent(
     override val eventId: String,
     override val eventType: String = "FighterFeedback",
@@ -270,6 +294,23 @@ data class ActionResolvedPayload(
     val actionType: FighterActionType,
     val outcome: ActionOutcome,
     val effects: List<ActionEffect> = emptyList()
+)
+
+data class EntitySpawnedPayload(
+    val entityId: String,
+    val entityType: ArenaEntityType,
+    val faction: String? = null,
+    val position: Coordinate,
+    val attributes: Map<String, String> = emptyMap()
+)
+
+data class EntityRemovedPayload(
+    val entityId: String,
+    val entityType: ArenaEntityType,
+    val faction: String? = null,
+    val reason: String,
+    val position: Coordinate? = null,
+    val attributes: Map<String, String> = emptyMap()
 )
 
 enum class FighterFeedbackStatus {

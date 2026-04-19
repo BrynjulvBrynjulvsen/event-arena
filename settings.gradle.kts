@@ -4,5 +4,6 @@ include(
     "arena-domain",
     "arena-engine",
     "arena-replay-cli",
-    "arena-fighter"
+    "arena-fighter",
+    "arena-tui-cli"
 )

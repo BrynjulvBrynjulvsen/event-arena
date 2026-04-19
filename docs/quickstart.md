@@ -32,6 +32,12 @@ Open separate terminals for each process.
 ./gradlew :arena-replay-cli:bootRun
 ```
 
+Optional (visual demo): run terminal visualization instead:
+
+```bash
+./gradlew :arena-tui-cli:bootRun
+```
+
 ## Trigger Matches
 
 ```bash

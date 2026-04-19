@@ -18,6 +18,8 @@ It simulates turn-based combat on a 2D board where autonomous fighters publish c
 - Event model and topic contracts: `docs/event-model.md`
 - Board and turn rules: `docs/game-rules.md`
 - Local runbook: `docs/quickstart.md`
+- Future extension ideas: `docs/future-roadmap.md`
+- Hackathon/workshop idea menu: `docs/hackathon-menu.md`
 - Contributor conventions and design principles: `AGENTS.md`
 
 ## License
@@ -30,6 +32,7 @@ This project is licensed under the Apache License 2.0. See `LICENSE`.
 - `arena-engine`: turn coordinator and combat executor
 - `arena-fighter`: bot pilot service (one instance per fighter)
 - `arena-replay-cli`: sample read model / event timeline logger
+- `arena-tui-cli`: terminal-based live match visualizer
 
 ## Run Locally
 
@@ -62,6 +65,12 @@ docker compose up -d
 
 ```bash
 ./gradlew :arena-replay-cli:bootRun
+```
+
+Optional: run terminal visualization instead of replay logger:
+
+```bash
+./gradlew :arena-tui-cli:bootRun
 ```
 
 6. Trigger a match:

@@ -13,7 +13,7 @@ Current schema set includes:
 
 - command schema: `FighterActionCommand.schema.json`
 - lifecycle schemas: `MatchScheduledEvent.schema.json`, `MatchStartedEvent.schema.json`, `TurnOpenedEvent.schema.json`, `TurnClosedEvent.schema.json`
-- combat schemas: `ActionResolvedEvent.schema.json`, `FighterMovedEvent.schema.json`, `AttackResolvedEvent.schema.json`, `DamageAppliedEvent.schema.json`, `MatchEndedEvent.schema.json`
+- combat schemas: `EntitySpawnedEvent.schema.json`, `EntityRemovedEvent.schema.json`, `ActionResolvedEvent.schema.json`, `FighterMovedEvent.schema.json`, `AttackResolvedEvent.schema.json`, `DamageAppliedEvent.schema.json`, `MatchEndedEvent.schema.json`
 - feedback schema: `FighterFeedbackEvent.schema.json`
 
 In local development, producers auto-register schemas.

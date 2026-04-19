@@ -14,7 +14,11 @@ import io.practicegroup.arena.domain.DamageAppliedEvent
 import io.practicegroup.arena.domain.DamageAppliedPayload
 import io.practicegroup.arena.domain.EntityChange
 import io.practicegroup.arena.domain.EntityChangeType
+import io.practicegroup.arena.domain.EntityRemovedEvent
+import io.practicegroup.arena.domain.EntityRemovedPayload
 import io.practicegroup.arena.domain.EntitySnapshot
+import io.practicegroup.arena.domain.EntitySpawnedEvent
+import io.practicegroup.arena.domain.EntitySpawnedPayload
 import io.practicegroup.arena.domain.EventFactory
 import io.practicegroup.arena.domain.FighterActionType
 import io.practicegroup.arena.domain.FighterFeedbackEvent
@@ -242,7 +246,7 @@ class TurnResolver(
         match.turn += 1
         match.actingFighterId = if (match.actingFighterId == match.fighterA.profile.id) match.fighterB.profile.id else match.fighterA.profile.id
         match.deadline = now.plusMillis(turnDurationMs)
-        maybeSpawnPickup(match)
+        maybeSpawnPickup(match, now)?.let { matchEvents += it }
         lifecycleEvents += createTurnOpenedEvent(match, now)
 
         return TurnResolution(lifecycleEvents, matchEvents, feedbackEvents, matchEnded = false)
@@ -275,6 +279,74 @@ class TurnResolver(
         val coverA = CoverEntity("cover-a", Coordinate((width / 2).coerceAtMost(width - 1), (height / 2).coerceAtMost(height - 1)))
         val coverB = CoverEntity("cover-b", Coordinate((width / 2 - 1).coerceAtLeast(0), (height / 2).coerceAtMost(height - 1)))
         return mutableMapOf(coverA.entityId to coverA, coverB.entityId to coverB)
+    }
+
+    fun createInitialEntityEvents(match: MatchState, now: Instant): List<ArenaEvent> {
+        val fighters = listOf(
+            EntitySpawnedEvent(
+                eventId = EventFactory.eventId(),
+                occurredAt = now,
+                matchId = match.matchId,
+                turn = 0,
+                traceId = match.traceId,
+                payload = EntitySpawnedPayload(
+                    entityId = match.fighterA.profile.id,
+                    entityType = ArenaEntityType.FIGHTER,
+                    faction = match.factionForEntity(match.fighterA.profile.id),
+                    position = match.fighterA.position,
+                    attributes = mapOf(
+                        "hp" to match.fighterA.hp.toString(),
+                        "maxHp" to match.fighterA.profile.maxHp.toString(),
+                        "range" to match.fighterA.profile.attackRange.toString(),
+                        "attack" to match.fighterA.profile.attack.toString(),
+                        "defense" to match.fighterA.profile.defense.toString(),
+                        "speed" to match.fighterA.profile.speed.toString(),
+                        "regenPerTurn" to match.fighterA.profile.regenPerTurn.toString()
+                    )
+                )
+            ),
+            EntitySpawnedEvent(
+                eventId = EventFactory.eventId(),
+                occurredAt = now,
+                matchId = match.matchId,
+                turn = 0,
+                traceId = match.traceId,
+                payload = EntitySpawnedPayload(
+                    entityId = match.fighterB.profile.id,
+                    entityType = ArenaEntityType.FIGHTER,
+                    faction = match.factionForEntity(match.fighterB.profile.id),
+                    position = match.fighterB.position,
+                    attributes = mapOf(
+                        "hp" to match.fighterB.hp.toString(),
+                        "maxHp" to match.fighterB.profile.maxHp.toString(),
+                        "range" to match.fighterB.profile.attackRange.toString(),
+                        "attack" to match.fighterB.profile.attack.toString(),
+                        "defense" to match.fighterB.profile.defense.toString(),
+                        "speed" to match.fighterB.profile.speed.toString(),
+                        "regenPerTurn" to match.fighterB.profile.regenPerTurn.toString()
+                    )
+                )
+            )
+        )
+
+        val covers = match.coverEntities.values.map {
+            EntitySpawnedEvent(
+                eventId = EventFactory.eventId(),
+                occurredAt = now,
+                matchId = match.matchId,
+                turn = 0,
+                traceId = match.traceId,
+                payload = EntitySpawnedPayload(
+                    entityId = it.entityId,
+                    entityType = ArenaEntityType.COVER,
+                    faction = "NEUTRAL",
+                    position = it.position,
+                    attributes = mapOf("coverBonus" to "0.20")
+                )
+            )
+        }
+
+        return fighters + covers
     }
 
     private fun resolveMoveAction(
@@ -311,7 +383,7 @@ class TurnResolver(
             changeType = EntityChangeType.MOVED,
             position = movedTo
         )
-        applyPickupIfPresent(match, fighterId, movedTo, entityChanges, actionEffects)
+        applyPickupIfPresent(match, fighterId, movedTo, entityChanges, actionEffects, matchEvents, now)
         return ActionOutcome.SUCCESS
     }
 
@@ -332,7 +404,9 @@ class TurnResolver(
         fighterId: String,
         position: Coordinate,
         entityChanges: MutableList<EntityChange>,
-        actionEffects: MutableList<ActionEffect>
+        actionEffects: MutableList<ActionEffect>,
+        matchEvents: MutableList<ArenaEvent>,
+        now: Instant
     ) {
         val pickup = match.pickupEntities.values.firstOrNull { it.position == position } ?: return
         match.pickupEntities.remove(pickup.entityId)
@@ -396,6 +470,21 @@ class TurnResolver(
             targetFaction = "NEUTRAL",
             metadata = mapOf("kind" to pickup.kind.name)
         )
+        matchEvents += EntityRemovedEvent(
+            eventId = EventFactory.eventId(),
+            occurredAt = now,
+            matchId = match.matchId,
+            turn = match.turn,
+            traceId = match.traceId,
+            payload = EntityRemovedPayload(
+                entityId = pickup.entityId,
+                entityType = ArenaEntityType.ITEM,
+                faction = "NEUTRAL",
+                reason = "PICKUP_COLLECTED",
+                position = pickup.position,
+                attributes = mapOf("kind" to pickup.kind.name)
+            )
+        )
     }
 
     private fun applyRegeneration(
@@ -428,9 +517,9 @@ class TurnResolver(
         }
     }
 
-    private fun maybeSpawnPickup(match: MatchState) {
+    private fun maybeSpawnPickup(match: MatchState, now: Instant): ArenaEvent? {
         if (match.pickupEntities.isNotEmpty() || match.random.nextDouble() > pickupSpawnChance) {
-            return
+            return null
         }
         val available = mutableListOf<Coordinate>()
         for (x in 0..<match.boardWidth) {
@@ -442,12 +531,26 @@ class TurnResolver(
             }
         }
         if (available.isEmpty()) {
-            return
+            return null
         }
         val spawn = available[match.random.nextInt(available.size)]
         val kind = if (match.random.nextBoolean()) PickupKind.HEAL_20 else PickupKind.ATTACK_BOOST_5
         val entityId = "pickup-${match.turn}-${EventFactory.eventId().take(6)}"
         match.pickupEntities[entityId] = PickupEntity(entityId, kind, spawn)
+        return EntitySpawnedEvent(
+            eventId = EventFactory.eventId(),
+            occurredAt = now,
+            matchId = match.matchId,
+            turn = match.turn,
+            traceId = match.traceId,
+            payload = EntitySpawnedPayload(
+                entityId = entityId,
+                entityType = ArenaEntityType.ITEM,
+                faction = "NEUTRAL",
+                position = spawn,
+                attributes = mapOf("kind" to kind.name)
+            )
+        )
     }
 
     private fun buildVisibleEntities(match: MatchState): List<EntitySnapshot> {

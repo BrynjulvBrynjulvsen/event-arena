@@ -6,6 +6,8 @@ import io.practicegroup.arena.domain.Coordinate
 import io.practicegroup.arena.domain.FighterActionType
 import io.practicegroup.arena.domain.FighterProfiles
 import io.practicegroup.arena.domain.FighterState
+import io.practicegroup.arena.domain.EntityRemovedEvent
+import io.practicegroup.arena.domain.EntitySpawnedEvent
 import io.practicegroup.arena.domain.MatchEndedEvent
 import io.practicegroup.arena.domain.TurnClosedEvent
 import io.practicegroup.arena.domain.TurnOpenedEvent
@@ -82,6 +84,34 @@ class TurnResolverTest {
 
         assertTrue(actionResolved.payload.effects.any { it.effectType == ActionEffectType.APPLIED_STATUS })
         assertTrue(actionResolved.payload.effects.any { it.effectType == ActionEffectType.DESPAWNED })
+        assertTrue(result.matchEvents.any { it is EntityRemovedEvent })
+    }
+
+    @Test
+    fun `turn may spawn pickup as first class entity event`() {
+        val state = baseState(activeFighterId = FighterProfiles.Balanced.id).copy(
+            random = object : Random(1) {
+                override fun nextDouble(): Double = 0.0
+                override fun nextBoolean(): Boolean = false
+                override fun nextInt(bound: Int): Int = 0
+            }
+        )
+        state.pendingAction = FighterActionType.WAIT
+
+        val result = TurnResolver(turnDurationMs = 1000).resolveTurn(state, Instant.now())
+
+        assertTrue(result.matchEvents.any { it is EntitySpawnedEvent && it.payload.entityType.name == "ITEM" })
+    }
+
+    @Test
+    fun `initial entity events include fighters and cover`() {
+        val resolver = TurnResolver(turnDurationMs = 1000)
+        val state = baseState(activeFighterId = FighterProfiles.Balanced.id)
+        state.coverEntities.putAll(resolver.createDefaultCoverEntities(state.boardWidth, state.boardHeight))
+        val events = resolver.createInitialEntityEvents(state, Instant.now())
+
+        assertTrue(events.filterIsInstance<EntitySpawnedEvent>().any { it.payload.entityType.name == "FIGHTER" })
+        assertTrue(events.filterIsInstance<EntitySpawnedEvent>().any { it.payload.entityType.name == "COVER" })
     }
 
     @Test

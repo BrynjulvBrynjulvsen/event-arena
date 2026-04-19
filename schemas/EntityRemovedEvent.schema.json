@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "io.practicegroup.arena.domain.EntityRemovedEvent",
+  "title": "EntityRemovedEvent",
+  "type": "object",
+  "required": ["eventId", "eventType", "schemaVersion", "occurredAt", "matchId", "turn", "traceId", "payload"],
+  "properties": {
+    "eventType": { "const": "EntityRemoved" },
+    "payload": {
+      "type": "object",
+      "required": ["entityId", "entityType", "reason"],
+      "properties": {
+        "entityId": { "type": "string" },
+        "entityType": {
+          "type": "string",
+          "enum": ["FIGHTER", "PROJECTILE", "ITEM", "COVER", "TERRAIN", "OBSTACLE"]
+        },
+        "faction": { "type": ["string", "null"] },
+        "reason": { "type": "string" },
+        "position": {
+          "type": ["object", "null"],
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" }
+          }
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    }
+  }
+}

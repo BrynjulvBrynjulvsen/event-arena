@@ -176,6 +176,8 @@ Example `TurnClosed`:
 Published to `arena.match-events.v1`.
 
 - `FighterMoved`
+- `EntitySpawned`
+- `EntityRemoved`
 - `ActionResolved`
 - `AttackResolved`
 - `DamageApplied`
@@ -197,6 +199,41 @@ Example `FighterMoved`:
     "fighterId": "balanced",
     "fromPosition": { "x": 3, "y": 2 },
     "toPosition": { "x": 4, "y": 2 }
+  }
+}
+```
+
+Example `EntitySpawned`:
+
+```json
+{
+  "eventType": "EntitySpawned",
+  "matchId": "26519223-552c-42cb-baaf-789d798fd06b",
+  "turn": 4,
+  "payload": {
+    "entityId": "pickup-4-2c473d",
+    "entityType": "ITEM",
+    "faction": "NEUTRAL",
+    "position": { "x": 2, "y": 3 },
+    "attributes": { "kind": "ATTACK_BOOST_5" }
+  }
+}
+```
+
+Example `EntityRemoved`:
+
+```json
+{
+  "eventType": "EntityRemoved",
+  "matchId": "26519223-552c-42cb-baaf-789d798fd06b",
+  "turn": 10,
+  "payload": {
+    "entityId": "pickup-4-2c473d",
+    "entityType": "ITEM",
+    "faction": "NEUTRAL",
+    "reason": "PICKUP_COLLECTED",
+    "position": { "x": 2, "y": 3 },
+    "attributes": { "kind": "ATTACK_BOOST_5" }
   }
 }
 ```
@@ -231,7 +268,7 @@ Example `ActionResolved`:
 
 Mechanics represented in events:
 
-- random pickups appear in `visibleEntities` and as `EntityChange(changeType=SPAWNED|REMOVED)`.
+- random pickups and cover are represented as first-class `EntitySpawned` / `EntityRemoved` events.
 - ranged attacks use fighter profile `attackRange`; outcomes are reflected in `ActionResolved`.
 - cover is represented as `entityType=COVER`; attack metadata indicates when cover modifiers applied.
 - health regeneration appears as `ActionEffect(effectType=HEAL, metadata.source=regen)` and `EntityChange` hp updates.
