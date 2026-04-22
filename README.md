@@ -29,7 +29,7 @@ Boundary rule:
 - Event model and topic contracts: `docs/event-model.md`
 - Board and turn rules: `docs/game-rules.md`
 - Local runbook: `docs/quickstart.md`
-- Future extension ideas: `docs/future-roadmap.md`
+- Future extension ideas backlog: `docs/future-ideas.md`
 - Hackathon/workshop guide (menu + exercises): `docs/hackathon-exercises.md`
 - Contributor conventions and design principles: `AGENTS.md`
 
@@ -53,54 +53,32 @@ Reference adapters (hackathon facilitators):
 
 ## Run Locally
 
-1. Start Kafka stack:
+Use `docs/quickstart.md` as the canonical runbook.
+
+Quick path:
+
+1. Start infrastructure:
 
 ```bash
 docker compose up -d
-```
-
-2. Set registry compatibility (recommended before first run):
-
-```bash
 ./scripts/set-compatibility.sh
 ```
 
-3. Start producer app:
+2. Start engine and fighter bots (separate terminals):
 
 ```bash
 ./gradlew :arena-engine:bootRun
-```
-
-4. Start two fighter bots in separate terminals:
-
-```bash
 ./gradlew :arena-fighter:bootRun --args='--arena.fighter.id=balanced'
 ./gradlew :arena-fighter:bootRun --args='--arena.fighter.id=glass-cannon'
 ```
 
-5. Start replay consumer in another terminal:
-
-```bash
-./gradlew :arena-replay-cli:bootRun
-```
-
-Optional: run terminal visualization instead of replay logger:
-
-```bash
-./gradlew :arena-tui-cli:bootRun
-```
-
-Optional: run websocket observer gateway for browser spectators:
-
-```bash
-./gradlew :arena-observer-gateway:bootRun
-```
-
-6. Trigger a match:
+3. Trigger a match:
 
 ```bash
 curl -X POST http://localhost:8080/matches -H "Content-Type: application/json" -d '{"seed":42}'
 ```
+
+For full setup options (replay, observer UI, observability overlay), use `docs/quickstart.md`.
 
 Kafbat UI is available on `http://localhost:8085`.
 Observer UI is available on `http://localhost:8090`.

@@ -84,7 +84,9 @@ Intent/feedback streams:
 
 - Keep `docs/event-model.md` aligned with actual behavior.
 - Keep `docs/game-rules.md` aligned with engine rules.
-- Keep `docs/quickstart.md` runnable.
+- Keep `docs/quickstart.md` runnable and treat it as the canonical local runbook.
+- Keep `docs/hackathon-exercises.md` as the primary workshop execution guide (flow + exercise scorecards).
+- Keep `docs/future-ideas.md` as an optional inspiration backlog, not a committed roadmap.
 - Update docs in the same PR when changing topics, payloads, or turn semantics.
 
 ## Demo/Workshop Operations
@@ -93,4 +95,6 @@ Intent/feedback streams:
   - `start-demo-fighters.sh`
   - `stop-demo-fighters.sh`
   - `trigger-demo-matches.sh`
+- Keep observability infrastructure opt-in via compose overlay (do not bloat default local startup path).
+- Prefer deterministic service-stop instructions in docs (for example, stop the owning terminal/session) over broad process-matching kill commands.
 - Keep the local workflow simple and explicit for participants.

@@ -1,5 +1,7 @@
 # Quickstart
 
+This is the canonical workshop runbook for local setup and verification.
+
 ## Prerequisites
 
 - Java 21

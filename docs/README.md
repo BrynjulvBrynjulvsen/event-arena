@@ -5,10 +5,13 @@ This folder documents the arena as it works today.
 ## Read Order
 
 1. `docs/quickstart.md` - run the full demo locally.
-2. `docs/event-model.md` - topics, message shapes, and turn flow.
-3. `docs/game-rules.md` - board geometry, actions, and resolution rules.
-4. `docs/future-roadmap.md` - potential extension tracks for future workshops.
-5. `docs/hackathon-exercises.md` - single hackathon guide: menu + structured exercise briefs.
+2. `docs/hackathon-exercises.md` - workshop flow + exercise selection and scorecards.
+3. `docs/event-model.md` - topics, message shapes, and turn flow.
+4. `docs/game-rules.md` - board geometry, actions, and resolution rules.
+
+Optional inspiration backlog:
+
+- `docs/future-ideas.md` - non-committed ideas for future workshop tracks.
 
 ## Module Intent
 

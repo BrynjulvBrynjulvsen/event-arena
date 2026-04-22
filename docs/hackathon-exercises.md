@@ -10,6 +10,27 @@ Use this as the single exercise menu and execution guide for Event Arena.
 - Pick one main exercise and one hardening angle.
 - Recommended timebox: 2-4 hours.
 
+## Workshop Flow
+
+1. **Bootstrap runtime**
+   - Complete `docs/quickstart.md` and confirm engine + two fighters are running.
+2. **Run sanity checks**
+   - Trigger one match with `POST /matches`.
+   - Confirm a running match response is returned.
+   - Confirm fighters show at least one `feedback status=MOVE_ACCEPTED`.
+3. **Pick one primary exercise**
+   - Use the selection matrix below and choose a scope that fits your timebox.
+4. **Implement minimum scope first**
+   - Get `Minimum scope` working before taking on stretch goals.
+5. **Demo with evidence**
+   - Use each exercise `Demo checklist` to present result quality, not just code changes.
+
+## Shared Baseline Prerequisites
+
+- `docs/quickstart.md` completed.
+- One match has been triggered successfully.
+- Engine and two fighter processes are running and producing non-`WAIT` actions.
+
 ## Exercise Selection Matrix
 
 | Exercise | Level | Typical Time | Complexity | Delivery Risk |
@@ -29,7 +50,7 @@ Use this as the single exercise menu and execution guide for Event Arena.
 
 - **Level**: Beginner
 - **Estimated time**: 2-4 hours
-- **Prerequisites**: `docs/event-model.md`, running engine + at least one fighter
+- **Prerequisites**: shared baseline prerequisites, plus `docs/event-model.md`.
 - **What**: Build a UI that submits fighter commands and renders turn outcomes.
 - **How**: Publish intent to `<fighterId>.match-actions.v1`; render from lifecycle + match events only.
 - **Why**: Reinforces command-vs-event boundaries in a user-facing path.
@@ -46,7 +67,7 @@ Use this as the single exercise menu and execution guide for Event Arena.
 
 - **Level**: Beginner
 - **Estimated time**: 2-3 hours
-- **Prerequisites**: `docs/event-model.md`, existing fighter bot run locally
+- **Prerequisites**: shared baseline prerequisites, plus `docs/event-model.md`.
 - **What**: Replace deterministic heuristics with an adaptive strategy.
 - **How**: Keep command contract unchanged; plug in a strategy module driven by turn context + feedback.
 - **Why**: Practices behavior upgrades without contract changes.
@@ -63,7 +84,7 @@ Use this as the single exercise menu and execution guide for Event Arena.
 
 - **Level**: Intermediate
 - **Estimated time**: 3-4 hours
-- **Prerequisites**: `arena-observer-gateway` running, browser client connected
+- **Prerequisites**: shared baseline prerequisites, plus `arena-observer-gateway` running with a browser client connected.
 - **What**: Stream live match events to many browser clients without direct Kafka access.
 - **How**: Evolve gateway with replay-on-connect and explicit backpressure/drop policy.
 - **Why**: Practices adapter design for high fan-out stream delivery.
@@ -80,7 +101,7 @@ Use this as the single exercise menu and execution guide for Event Arena.
 
 - **Level**: Beginner
 - **Estimated time**: 2-4 hours
-- **Prerequisites**: replay consumer basics, local file/db storage
+- **Prerequisites**: shared baseline prerequisites, plus replay consumer basics and local file/db storage.
 - **What**: Build a projection that survives restart, duplicate delivery, and replay.
 - **How**: Persist offsets/checkpoints and make writes idempotent by stable event identity.
 - **Why**: Practices at-least-once correctness.
@@ -97,7 +118,7 @@ Use this as the single exercise menu and execution guide for Event Arena.
 
 - **Level**: Intermediate
 - **Estimated time**: 2-3 hours
-- **Prerequisites**: Docker, engine + observer gateway running
+- **Prerequisites**: shared baseline prerequisites, plus observer gateway running.
 - **What**: Add a usable observability baseline, then extend it.
 - **How**: Use Actuator + Prometheus metrics with Grafana dashboarding.
 - **Why**: Builds operational debugging habits for event-driven systems.
@@ -155,7 +176,7 @@ curl -X POST http://localhost:8080/matches -H "Content-Type: application/json" -
 6. Failure mode check:
 
 ```bash
-pkill -f "arena-observer-gateway"
+# In the terminal running ./gradlew :arena-observer-gateway:bootRun, press Ctrl+C
 ```
 
 Confirm Prometheus shows `arena-observer-gateway` as `DOWN`.
@@ -164,7 +185,7 @@ Confirm Prometheus shows `arena-observer-gateway` as `DOWN`.
 
 - **Level**: Intermediate
 - **Estimated time**: 2-4 hours
-- **Prerequisites**: comfort reading logs/events across services
+- **Prerequisites**: shared baseline prerequisites, plus comfort reading logs/events across services.
 - **What**: Trace one command end-to-end from submission to feedback and resulting domain events.
 - **How**: Propagate `traceId`; set immediate feedback `causationId=commandId`; preserve IDs in logs.
 - **Why**: Enables incident triage and causality debugging.
@@ -181,7 +202,7 @@ Confirm Prometheus shows `arena-observer-gateway` as `DOWN`.
 
 - **Level**: Intermediate
 - **Estimated time**: 2-3 hours
-- **Prerequisites**: Schema Registry compatibility workflow
+- **Prerequisites**: shared baseline prerequisites, plus Schema Registry compatibility workflow.
 - **What**: Deliver one additive schema change safely and define controlled breaking-change path.
 - **How**: Add optional field, run compatibility checks, document migration approach.
 - **Why**: Practices contract governance in long-lived streams.
@@ -198,11 +219,11 @@ Confirm Prometheus shows `arena-observer-gateway` as `DOWN`.
 
 - **Level**: Advanced
 - **Estimated time**: 3-4 hours
-- **Prerequisites**: lifecycle semantics and backward-compat evolution patterns
+- **Prerequisites**: shared baseline prerequisites, plus lifecycle semantics and backward-compat evolution patterns.
 - **What**: Add explicit phase markers around turn progression while preserving existing clients.
 - **How**: Enrich lifecycle payloads additively and update docs in the same change.
 - **Why**: Practices semantic evolution without regressions.
-- **Where to start**: `arena-domain/src/main/kotlin/io/practicegroup/arena/domain/Events.kt`, `arena-engine/src/main/kotlin/io/practicegroup/arena/engine/logic/TurnResolver.kt`, `docs/future-roadmap.md`
+- **Where to start**: `arena-domain/src/main/kotlin/io/practicegroup/arena/domain/Events.kt`, `arena-engine/src/main/kotlin/io/practicegroup/arena/engine/logic/TurnResolver.kt`, `docs/event-model.md`
 - **Minimum scope**: Emit clear phase markers without breaking existing deserializers.
 - **Stretch scope**: Add phase duration metrics and replay visualization.
 - **Done when**: Existing consumers run without code updates and can ignore the new markers.
@@ -215,7 +236,7 @@ Confirm Prometheus shows `arena-observer-gateway` as `DOWN`.
 
 - **Level**: Advanced
 - **Estimated time**: 3-4 hours
-- **Prerequisites**: command validation + turn resolution flow familiarity
+- **Prerequisites**: shared baseline prerequisites, plus command validation + turn resolution flow familiarity.
 - **What**: Honor `targetEntityId` for explicit target selection.
 - **How**: Update validation and attack resolution; keep backward-compatible fallback when target missing.
 - **Why**: Practices behavior extension through stable contracts.
@@ -232,11 +253,11 @@ Confirm Prometheus shows `arena-observer-gateway` as `DOWN`.
 
 - **Level**: Advanced
 - **Estimated time**: 3-4 hours
-- **Prerequisites**: read model design and source-of-truth boundaries
+- **Prerequisites**: shared baseline prerequisites, plus read model design and source-of-truth boundaries.
 - **What**: Publish optional turn-end snapshots on `arena.match-state.v1` to speed onboarding.
 - **How**: Emit derivative snapshots while keeping authoritative streams unchanged.
 - **Why**: Practices read-optimized streams without corrupting event truth.
-- **Where to start**: `docs/event-model.md`, `arena-engine/src/main/kotlin/io/practicegroup/arena/engine/logic/TurnResolver.kt`, `docs/future-roadmap.md`
+- **Where to start**: `docs/event-model.md`, `arena-engine/src/main/kotlin/io/practicegroup/arena/engine/logic/TurnResolver.kt`
 - **Minimum scope**: Snapshot topic can reconstruct current board state for one match.
 - **Stretch scope**: Snapshot compaction strategy + consumer bootstrap optimization.
 - **Done when**: A new UI/replay consumer can bootstrap from snapshot topic and continue from authoritative events.

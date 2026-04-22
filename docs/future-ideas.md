@@ -1,6 +1,6 @@
-# Future Roadmap
+# Future Ideas
 
-Potential extension tracks for upcoming workshops.
+Optional extension ideas for upcoming workshops. This is an inspiration backlog, not a delivery roadmap.
 
 ## Now (High Leverage)
 
