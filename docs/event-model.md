@@ -20,6 +20,25 @@ This system is command-and-event driven.
 - `arena.match-lifecycle.v1` and `arena.match-events.v1` are the canonical match timeline.
 - Fighter action topics are intent input only.
 
+### Event Envelope and Tracing
+
+All engine events share a stable envelope:
+
+- `eventId`: unique id for idempotency and deduplication in consumers.
+- `eventType`: concrete fact type (for example `TurnOpened`, `ActionResolved`).
+- `schemaVersion`: schema shape version for readers.
+- `occurredAt`: event time emitted by engine.
+- `matchId`: aggregate key and Kafka message key.
+- `turn`: current turn number for ordering within a match.
+- `traceId`: correlation id for end-to-end flow of one match timeline.
+- `causationId`: optional upstream cause reference (for chained events).
+
+Tracing guidance:
+
+- Treat `traceId` as a stable per-match correlation id.
+- Carry `traceId` through lifecycle, match, and feedback topics.
+- When generating derived events, set `causationId` to the triggering `eventId` when available.
+
 ### Timing and Turn Semantics
 
 - A turn opens with `TurnOpened` and closes at the configured deadline.
@@ -90,6 +109,7 @@ Fighter command (`FighterActionCommand`):
   "matchId": "26519223-552c-42cb-baaf-789d798fd06b",
   "turn": 10,
   "fighterId": "balanced",
+  "commandId": "a2f5bd4a-c33a-4fc2-9dd2-4df97e3440cc",
   "actionType": "ATTACK",
   "targetEntityId": "glass-cannon",
   "sentAt": "2026-03-04T09:24:14.511Z"
@@ -108,6 +128,7 @@ Fighter command (`FighterActionCommand`):
 Command expectations:
 
 - `matchId`, `turn`, and `fighterId` must match the currently active turn.
+- `commandId` should be stable per submitted command and is used for feedback causation.
 - `targetEntityId` is optional; current engine uses active opponent for two-fighter matches.
 - Sending multiple commands in one turn is allowed; last valid one wins.
 - A sent command might be rejected; check `<fighterId>.feedback.v1` for outcome.
@@ -282,6 +303,7 @@ Feedback event purpose:
 - Tell a fighter whether a submitted command was accepted.
 - Explain rejections with reason codes.
 - Provide per-turn post-resolution status (`TURN_RESULTS`) with typed entity changes.
+- Link immediate validation feedback to the source command via `causationId=commandId`.
 
 `status` values:
 

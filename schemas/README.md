@@ -18,3 +18,9 @@ Current schema set includes:
 
 In local development, producers auto-register schemas.
 For CI/prod, prefer explicit registration and set `auto.register.schemas=false`.
+
+Useful scripts:
+
+- `scripts/check-schema-compatibility.sh <registry-url> <subject> <schema-file>`
+- `scripts/register-schema.sh <registry-url> <subject> <schema-file>`
+- `scripts/set-compatibility.sh [registry-url] [compatibility-level]`

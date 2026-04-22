@@ -8,6 +8,7 @@
     "matchId": { "type": "string" },
     "turn": { "type": "integer" },
     "fighterId": { "type": "string" },
+    "commandId": { "type": "string" },
     "actionType": {
       "type": "string",
       "enum": ["MOVE_UP", "MOVE_DOWN", "MOVE_LEFT", "MOVE_RIGHT", "ATTACK", "WAIT"]

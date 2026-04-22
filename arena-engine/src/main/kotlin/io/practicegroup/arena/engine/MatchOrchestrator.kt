@@ -16,6 +16,10 @@ import io.practicegroup.arena.domain.MatchStartedPayload
 import io.practicegroup.arena.engine.logic.ActionValidator
 import io.practicegroup.arena.engine.logic.MatchState
 import io.practicegroup.arena.engine.logic.TurnResolver
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.Gauge
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Timer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -34,6 +38,7 @@ import kotlin.random.Random as KotlinRandom
 class MatchOrchestrator(
     private val arenaEventPublisher: ArenaEventPublisher,
     private val objectMapper: ObjectMapper,
+    private val meterRegistry: MeterRegistry,
     @Value("\${arena.kafka.topic}") private val matchEventsTopic: String,
     @Value("\${arena.kafka.lifecycle-topic}") private val lifecycleTopic: String,
     @Value("\${arena.turn.duration-ms:1000}") private val turnDurationMs: Long,
@@ -45,6 +50,24 @@ class MatchOrchestrator(
     private val matches = ConcurrentHashMap<String, MatchState>()
     private val actionValidator = ActionValidator()
     private val turnResolver = TurnResolver(turnDurationMs)
+    private val turnResolutionTimer =
+        Timer.builder("arena.turn.resolution.latency")
+            .description("Turn resolution duration in the engine")
+            .register(meterRegistry)
+    private val commandsAcceptedCounter =
+        Counter.builder("arena.fighter.commands.accepted")
+            .description("Accepted fighter commands")
+            .register(meterRegistry)
+    private val malformedCommandsCounter =
+        Counter.builder("arena.fighter.commands.malformed")
+            .description("Malformed fighter commands rejected before validation")
+            .register(meterRegistry)
+
+    init {
+        Gauge.builder("arena.matches.active") { matches.size.toDouble() }
+            .description("Active matches currently tracked by engine")
+            .register(meterRegistry)
+    }
 
     fun startMatch(request: StartMatchRequest): StartMatchResponse {
         val matchId = UUID.randomUUID().toString()
@@ -128,6 +151,7 @@ class MatchOrchestrator(
         val command = parseActionCommand(record.value()) ?: return
         val state = matches[command.matchId]
         if (state == null) {
+            incrementRejectedCommandCounter("MATCH_NOT_FOUND")
             publishFeedback(
                 fighterId = command.fighterId,
                 matchId = command.matchId,
@@ -135,7 +159,8 @@ class MatchOrchestrator(
                 status = FighterFeedbackStatus.INVALID_MOVE,
                 actionType = command.actionType.name,
                 reasonCode = "MATCH_NOT_FOUND",
-                actorEntityId = command.fighterId
+                actorEntityId = command.fighterId,
+                causationId = command.commandId
             )
             return
         }
@@ -143,6 +168,7 @@ class MatchOrchestrator(
         synchronized(state) {
             val issue = actionValidator.validateCommand(state, command, now())
             if (issue != null) {
+                incrementRejectedCommandCounter(issue.reasonCode)
                 publishFeedback(
                     fighterId = command.fighterId,
                     matchId = command.matchId,
@@ -150,12 +176,15 @@ class MatchOrchestrator(
                     status = issue.status,
                     actionType = command.actionType.name,
                     reasonCode = issue.reasonCode,
-                    actorEntityId = command.fighterId
+                    actorEntityId = command.fighterId,
+                    traceId = state.traceId,
+                    causationId = command.commandId
                 )
                 return
             }
 
             state.pendingAction = command.actionType
+            commandsAcceptedCounter.increment()
             publishFeedback(
                 fighterId = command.fighterId,
                 matchId = command.matchId,
@@ -163,7 +192,9 @@ class MatchOrchestrator(
                 status = FighterFeedbackStatus.MOVE_ACCEPTED,
                 actionType = command.actionType.name,
                 reasonCode = null,
-                actorEntityId = command.fighterId
+                actorEntityId = command.fighterId,
+                traceId = state.traceId,
+                causationId = command.commandId
             )
         }
     }
@@ -174,7 +205,9 @@ class MatchOrchestrator(
         matches.values.forEach { state ->
             synchronized(state) {
                 if (!state.ended && !now.isBefore(state.deadline)) {
+                    val timerSample = Timer.start(meterRegistry)
                     val resolution = turnResolver.resolveTurn(state, now)
+                    timerSample.stop(turnResolutionTimer)
                     resolution.matchEvents.forEach { publishMatchEvent(it) }
                     resolution.lifecycleEvents.forEach { publishLifecycleEvent(it) }
                     resolution.feedbackEvents.forEach { publishFeedback(it) }
@@ -193,14 +226,17 @@ class MatchOrchestrator(
         status: FighterFeedbackStatus,
         actionType: String?,
         reasonCode: String?,
-        actorEntityId: String?
+        actorEntityId: String?,
+        traceId: String = matchId,
+        causationId: String? = null
     ) {
         val event = FighterFeedbackEvent(
             eventId = EventFactory.eventId(),
             occurredAt = now(),
             matchId = matchId,
             turn = turn,
-            traceId = matchId,
+            traceId = traceId,
+            causationId = causationId,
             payload = FighterFeedbackPayload(
                 fighterId = fighterId,
                 status = status,
@@ -241,11 +277,22 @@ class MatchOrchestrator(
                 turn = node.path("turn").asInt(),
                 fighterId = node.path("fighterId").asString(),
                 actionType = enumValueOf(node.path("actionType").asString("WAIT")),
-                targetEntityId = node.path("targetEntityId").asString(null)
+                targetEntityId = node.path("targetEntityId").asString(null),
+                commandId = node.path("commandId").asString().takeIf { it.isNotBlank() }
+                    ?: UUID.randomUUID().toString()
             )
         }.onFailure { ex ->
+            malformedCommandsCounter.increment()
             log.warn("Ignoring action command due to parse error type={}", raw::class.qualifiedName, ex)
         }.getOrNull()?.takeIf { it.matchId.isNotBlank() && it.fighterId.isNotBlank() }
+    }
+
+    private fun incrementRejectedCommandCounter(reasonCode: String?) {
+        meterRegistry.counter(
+            "arena.fighter.commands.rejected",
+            "reason",
+            reasonCode ?: "UNKNOWN"
+        ).increment()
     }
 
     private fun now() = clock.instant()

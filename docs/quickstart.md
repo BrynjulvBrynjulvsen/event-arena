@@ -16,6 +16,12 @@ docker compose up -d
 
 Open separate terminals for each process.
 
+Optional (schema workflow): validate a local schema file before registration:
+
+```bash
+./scripts/check-schema-compatibility.sh http://localhost:8081 io.practicegroup.arena.domain.TurnOpenedEvent schemas/TurnOpenedEvent.schema.json
+```
+
 ```bash
 ./gradlew :arena-engine:bootRun
 ```
@@ -31,6 +37,26 @@ Open separate terminals for each process.
 ```bash
 ./gradlew :arena-replay-cli:bootRun
 ```
+
+Replay consumer stores local checkpoint state in `.demo/replay-checkpoint.json`.
+Delete that file to force a full local replay rebuild.
+
+Optional (browser spectators):
+
+```bash
+./gradlew :arena-observer-gateway:bootRun
+```
+
+Optional (observability starter stack):
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d
+```
+
+Then open:
+
+- Prometheus targets: `http://localhost:9090/targets`
+- Grafana: `http://localhost:3000` (`admin` / `admin`)
 
 Optional (visual demo): run terminal visualization instead:
 
@@ -59,4 +85,5 @@ Or run a burst:
 
 ## Local UI
 
-- Kafka UI: `http://localhost:8085`
+- Kafbat UI: `http://localhost:8085`
+- Observer UI: `http://localhost:8090`

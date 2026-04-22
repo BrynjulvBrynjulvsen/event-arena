@@ -12,6 +12,17 @@ It simulates turn-based combat on a 2D board where autonomous fighters publish c
 - Include richer mechanics out of the box: ranged attacks, cover, pickups, and regeneration.
 - Keep architecture modular so participants can extend one service without needing to understand the entire stack.
 
+## Repository Intent
+
+- Keep the core arena small and authoritative so event semantics stay clear.
+- Include thin reference adapters that accelerate hackathons without removing the challenge.
+- Leave production hardening and advanced capabilities to participants as exercises.
+
+Boundary rule:
+
+- If a component is required to run valid matches and authoritative event history, it belongs in core.
+- If a component mainly demonstrates a pattern (UI, gateway, projection style), it belongs in reference.
+
 ## Documentation
 
 - Start here: `docs/README.md`
@@ -19,20 +30,26 @@ It simulates turn-based combat on a 2D board where autonomous fighters publish c
 - Board and turn rules: `docs/game-rules.md`
 - Local runbook: `docs/quickstart.md`
 - Future extension ideas: `docs/future-roadmap.md`
-- Hackathon/workshop idea menu: `docs/hackathon-menu.md`
+- Hackathon/workshop guide (menu + exercises): `docs/hackathon-exercises.md`
 - Contributor conventions and design principles: `AGENTS.md`
 
 ## License
 
 This project is licensed under the Apache License 2.0. See `LICENSE`.
 
-## Modules
+## Module Tiers
+
+Core (authoritative runtime):
 
 - `arena-domain`: shared domain model (fighters, actions, events)
 - `arena-engine`: turn coordinator and combat executor
 - `arena-fighter`: bot pilot service (one instance per fighter)
+
+Reference adapters (hackathon facilitators):
+
 - `arena-replay-cli`: sample read model / event timeline logger
 - `arena-tui-cli`: terminal-based live match visualizer
+- `arena-observer-gateway`: websocket fan-out gateway for match spectators
 
 ## Run Locally
 
@@ -73,13 +90,20 @@ Optional: run terminal visualization instead of replay logger:
 ./gradlew :arena-tui-cli:bootRun
 ```
 
+Optional: run websocket observer gateway for browser spectators:
+
+```bash
+./gradlew :arena-observer-gateway:bootRun
+```
+
 6. Trigger a match:
 
 ```bash
 curl -X POST http://localhost:8080/matches -H "Content-Type: application/json" -d '{"seed":42}'
 ```
 
-Kafka UI is available on `http://localhost:8085`.
+Kafbat UI is available on `http://localhost:8085`.
+Observer UI is available on `http://localhost:8090`.
 
 ## Demo helper scripts
 

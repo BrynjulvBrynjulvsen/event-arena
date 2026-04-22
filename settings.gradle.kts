@@ -5,5 +5,6 @@ include(
     "arena-engine",
     "arena-replay-cli",
     "arena-fighter",
-    "arena-tui-cli"
+    "arena-tui-cli",
+    "arena-observer-gateway"
 )

@@ -1,21 +1,28 @@
+server:
+  port: 8090
+
 arena:
   kafka:
-    topic: arena.match-events.v1
-  replay:
-    checkpoint-file: .demo/replay-checkpoint.json
-    max-event-id-cache: 20000
+    match-events-topic: arena.match-events.v1
+    lifecycle-topic: arena.match-lifecycle.v1
 
 spring:
-  main:
-    web-application-type: none
-    keep-alive: true
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
-      group-id: arena-replay-cli
-      auto-offset-reset: earliest
+      group-id: arena-observer-gateway
+      auto-offset-reset: latest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer
       properties:
         schema.registry.url: http://localhost:8081
         specific.json.reader: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    tags:
+      application: arena-observer-gateway
