@@ -4,7 +4,7 @@ This folder documents the arena as it works today.
 
 ## Read Order
 
-1. `docs/quickstart.md` - run the full demo locally.
+1. `docs/quickstart.md` - run the full workshop stack with Docker (`./install.sh`).
 2. `docs/hackathon-exercises.md` - workshop flow + exercise selection and scorecards.
 3. `docs/event-model.md` - topics, message shapes, and turn flow.
 4. `docs/game-rules.md` - board geometry, actions, and resolution rules.

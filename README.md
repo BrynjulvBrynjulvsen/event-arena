@@ -55,33 +55,47 @@ Reference adapters (hackathon facilitators):
 
 Use `docs/quickstart.md` as the canonical runbook.
 
-Quick path:
-
-1. Start infrastructure:
+Primary path:
 
 ```bash
-docker compose up -d
-./scripts/set-compatibility.sh
+./install.sh
 ```
 
-2. Start engine and fighter bots (separate terminals):
+This builds local images, starts the core stack with Docker Compose, sets schema compatibility, and prompts for optional observability.
 
-```bash
-./gradlew :arena-engine:bootRun
-./gradlew :arena-fighter:bootRun --args='--arena.fighter.id=balanced'
-./gradlew :arena-fighter:bootRun --args='--arena.fighter.id=glass-cannon'
-```
+After install:
 
-3. Trigger a match:
+- Trigger a match:
 
 ```bash
 curl -X POST http://localhost:8080/matches -H "Content-Type: application/json" -d '{"seed":42}'
 ```
 
-For full setup options (replay, observer UI, observability overlay), use `docs/quickstart.md`.
+- Kafbat UI: `http://localhost:8085`
+- Observer UI: `http://localhost:8090`
 
-Kafbat UI is available on `http://localhost:8085`.
-Observer UI is available on `http://localhost:8090`.
+If observability is enabled:
+
+- Prometheus: `http://localhost:9090/targets`
+- Grafana: `http://localhost:3000` (`admin` / `admin`)
+
+Manual `bootRun` fallback remains documented in `docs/quickstart.md`.
+
+## Update Running Stack
+
+Full stack refresh:
+
+```bash
+./scripts/rebuild-and-restart.sh
+```
+
+Fast targeted refresh:
+
+```bash
+./scripts/rebuild-and-restart.sh engine
+./scripts/rebuild-and-restart.sh fighter-balanced
+./scripts/rebuild-and-restart.sh replay
+```
 
 ## Demo helper scripts
 

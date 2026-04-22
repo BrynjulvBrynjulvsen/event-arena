@@ -44,3 +44,64 @@ services:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+
+  engine:
+    image: event-arena/arena-engine:local
+    container_name: arena-engine
+    depends_on:
+      - kafka
+      - schema-registry
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+
+  fighter-balanced:
+    image: event-arena/arena-fighter:local
+    container_name: arena-fighter-balanced
+    depends_on:
+      - kafka
+      - schema-registry
+      - engine
+    environment:
+      ARENA_FIGHTER_ID: balanced
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+
+  fighter-glass-cannon:
+    image: event-arena/arena-fighter:local
+    container_name: arena-fighter-glass-cannon
+    depends_on:
+      - kafka
+      - schema-registry
+      - engine
+    environment:
+      ARENA_FIGHTER_ID: glass-cannon
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+
+  replay:
+    image: event-arena/arena-replay-cli:local
+    container_name: arena-replay
+    depends_on:
+      - kafka
+      - schema-registry
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+
+  observer-gateway:
+    image: event-arena/arena-observer-gateway:local
+    container_name: arena-observer-gateway
+    depends_on:
+      - kafka
+      - schema-registry
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL: http://schema-registry:8081

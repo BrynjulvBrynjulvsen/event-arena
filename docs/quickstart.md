@@ -4,88 +4,118 @@ This is the canonical workshop runbook for local setup and verification.
 
 ## Prerequisites
 
-- Java 21
 - Docker
+- Docker Compose plugin (`docker compose`)
 
-## Start Infrastructure
+## Docker Install Path (Primary)
 
-```bash
-docker compose up -d
-./scripts/set-compatibility.sh
-```
-
-## Start Services
-
-Open separate terminals for each process.
-
-Optional (schema workflow): validate a local schema file before registration:
+From repository root:
 
 ```bash
-./scripts/check-schema-compatibility.sh http://localhost:8081 io.practicegroup.arena.domain.TurnOpenedEvent schemas/TurnOpenedEvent.schema.json
+./install.sh
 ```
 
-```bash
-./gradlew :arena-engine:bootRun
-```
+The installer will:
 
-```bash
-./gradlew :arena-fighter:bootRun --args='--arena.fighter.id=balanced'
-```
+- build all workshop service images,
+- start infra + core workshop services,
+- set Schema Registry compatibility to `BACKWARD_TRANSITIVE`,
+- prompt whether to start observability overlay (Prometheus + Grafana).
 
-```bash
-./gradlew :arena-fighter:bootRun --args='--arena.fighter.id=glass-cannon'
-```
+## Verify The Stack
 
-```bash
-./gradlew :arena-replay-cli:bootRun
-```
-
-Replay consumer stores local checkpoint state in `.demo/replay-checkpoint.json`.
-Delete that file to force a full local replay rebuild.
-
-Optional (browser spectators):
-
-```bash
-./gradlew :arena-observer-gateway:bootRun
-```
-
-Optional (observability starter stack):
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.observability.yml up -d
-```
-
-Then open:
-
-- Prometheus targets: `http://localhost:9090/targets`
-- Grafana: `http://localhost:3000` (`admin` / `admin`)
-
-Optional (visual demo): run terminal visualization instead:
-
-```bash
-./gradlew :arena-tui-cli:bootRun
-```
-
-## Trigger Matches
+Trigger a match:
 
 ```bash
 curl -X POST http://localhost:8080/matches -H "Content-Type: application/json" -d '{"seed":42}'
 ```
 
-Or run a burst:
+Expected result: a JSON payload with match metadata/state (running or terminal depending on lifecycle timing).
 
-```bash
-./scripts/trigger-demo-matches.sh http://localhost:8080 5 1000
-```
-
-## Run Bots In Background (Optional)
-
-```bash
-./scripts/start-demo-fighters.sh
-./scripts/stop-demo-fighters.sh
-```
-
-## Local UI
+Open UIs:
 
 - Kafbat UI: `http://localhost:8085`
 - Observer UI: `http://localhost:8090`
+
+If you enabled observability during install:
+
+- Prometheus targets: `http://localhost:9090/targets`
+- Grafana: `http://localhost:3000` (`admin` / `admin`)
+
+## Refresh After Code Changes
+
+Full workshop refresh:
+
+```bash
+./scripts/rebuild-and-restart.sh
+```
+
+Fast single-service refresh examples:
+
+```bash
+./scripts/rebuild-and-restart.sh engine
+./scripts/rebuild-and-restart.sh replay
+./scripts/rebuild-and-restart.sh observer-gateway
+```
+
+Fighter refresh options:
+
+```bash
+./scripts/rebuild-and-restart.sh fighter-balanced
+./scripts/rebuild-and-restart.sh fighter-glass-cannon
+./scripts/rebuild-and-restart.sh fighter
+```
+
+`fighter` refreshes both fighter containers (they share the same image).
+
+Accepted service names: `engine`, `fighter`, `fighter-balanced`, `fighter-glass-cannon`, `replay`, `observer-gateway`, `all`.
+
+## Manual/Dev Fallback (bootRun)
+
+Use this path if you need direct process-level debugging or local service execution outside containers.
+
+1. Start infra only:
+
+```bash
+docker compose up -d kafka schema-registry kafka-ui
+./scripts/set-compatibility.sh
+```
+
+2. Start services in separate terminals:
+
+```bash
+./gradlew :arena-engine:bootRun
+./gradlew :arena-fighter:bootRun --args='--arena.fighter.id=balanced'
+./gradlew :arena-fighter:bootRun --args='--arena.fighter.id=glass-cannon'
+./gradlew :arena-replay-cli:bootRun
+./gradlew :arena-observer-gateway:bootRun
+```
+
+Optional terminal visualization:
+
+```bash
+./gradlew :arena-tui-cli:bootRun
+```
+
+Optional schema validation before registration:
+
+```bash
+./scripts/check-schema-compatibility.sh http://localhost:8081 io.practicegroup.arena.domain.TurnOpenedEvent schemas/TurnOpenedEvent.schema.json
+```
+
+Replay consumer stores local checkpoint state in `.demo/replay-checkpoint.json`.
+Delete that file to force a full local replay rebuild.
+
+## Shutdown
+
+Stop core stack:
+
+```bash
+docker compose down
+```
+
+If observability is running, stop both files:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.observability.yml down
+```
