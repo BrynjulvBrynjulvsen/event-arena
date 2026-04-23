@@ -29,6 +29,10 @@ import org.springframework.stereotype.Service
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
 import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.Random
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -149,6 +153,19 @@ class MatchOrchestrator(
     @KafkaListener(topicPattern = "\${arena.kafka.action-topic-pattern}", groupId = "arena-engine")
     fun onFighterAction(record: ConsumerRecord<String, Any>) {
         val command = parseActionCommand(record.value()) ?: return
+        val receivedAt = now()
+        val commandLagMs = Duration.between(command.sentAt, receivedAt).toMillis().coerceAtLeast(0)
+        log.info(
+            "Consumed fighter action matchId={} turn={} fighterId={} action={} topic={} partition={} offset={} lagMs={}",
+            command.matchId,
+            command.turn,
+            command.fighterId,
+            command.actionType,
+            record.topic(),
+            record.partition(),
+            record.offset(),
+            commandLagMs
+        )
         val state = matches[command.matchId]
         if (state == null) {
             incrementRejectedCommandCounter("MATCH_NOT_FOUND")
@@ -160,6 +177,7 @@ class MatchOrchestrator(
                 actionType = command.actionType.name,
                 reasonCode = "MATCH_NOT_FOUND",
                 actorEntityId = command.fighterId,
+                traceId = command.matchId,
                 causationId = command.commandId
             )
             return
@@ -279,12 +297,34 @@ class MatchOrchestrator(
                 actionType = enumValueOf(node.path("actionType").asString("WAIT")),
                 targetEntityId = node.path("targetEntityId").asString(null),
                 commandId = node.path("commandId").asString().takeIf { it.isNotBlank() }
-                    ?: UUID.randomUUID().toString()
+                    ?: UUID.randomUUID().toString(),
+                sentAt = node.path("sentAt").asString().takeIf { it.isNotBlank() }
+                    ?.let(::parseSentAt)
+                    ?: now()
             )
         }.onFailure { ex ->
             malformedCommandsCounter.increment()
             log.warn("Ignoring action command due to parse error type={}", raw::class.qualifiedName, ex)
         }.getOrNull()?.takeIf { it.matchId.isNotBlank() && it.fighterId.isNotBlank() }
+    }
+
+    private fun parseSentAt(value: String): Instant {
+        return runCatching { Instant.parse(value) }
+            .recoverCatching {
+                val seconds = BigDecimal(value)
+                val epochSeconds = seconds.setScale(0, RoundingMode.DOWN).longValueExact()
+                val nanos = seconds
+                    .remainder(BigDecimal.ONE)
+                    .movePointRight(9)
+                    .abs()
+                    .setScale(0, RoundingMode.DOWN)
+                    .intValueExact()
+                Instant.ofEpochSecond(epochSeconds, nanos.toLong())
+            }
+            .getOrElse {
+                log.warn("Unable to parse sentAt='{}'; defaulting to current time", value)
+                now()
+            }
     }
 
     private fun incrementRejectedCommandCounter(reasonCode: String?) {

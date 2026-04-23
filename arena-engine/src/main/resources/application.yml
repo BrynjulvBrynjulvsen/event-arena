@@ -22,6 +22,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer
       properties:
+        metadata.max.age.ms: 1000
         schema.registry.url: http://localhost:8081
         specific.json.reader: false
     producer:
