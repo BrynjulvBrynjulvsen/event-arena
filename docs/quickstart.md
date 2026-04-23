@@ -97,6 +97,18 @@ Optional terminal visualization:
 ./gradlew :arena-tui-cli:bootRun
 ```
 
+Optional richer multi-match terminal dashboard:
+
+```bash
+./scripts/run-tui-mordant.sh
+```
+
+Useful overrides for the Mordant dashboard:
+
+```bash
+./scripts/run-tui-mordant.sh --arena.tui.match-id=<matchId> --arena.tui.auto-follow=false
+```
+
 Optional schema validation before registration:
 
 ```bash

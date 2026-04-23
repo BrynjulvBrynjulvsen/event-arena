@@ -23,5 +23,6 @@ Core (authoritative):
 Reference (facilitator/starter):
 
 - `arena-replay-cli`: consumes match events and prints replay logs.
-- `arena-tui-cli`: consumes match events and renders a live terminal board.
+- `arena-tui-cli`: consumes match events and renders a simple live terminal board.
+- `arena-tui-mordant`: standalone Kafka + Mordant dashboard for watching multiple matches in one terminal.
 - `arena-observer-gateway`: consumes match/lifecycle events and streams them to websocket clients.
