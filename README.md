@@ -8,15 +8,15 @@ The system simulates turn-based combat on a 2D board where fighters publish comm
 
 Core modules (authoritative runtime):
 
-- `arena-domain`: shared domain model (fighters, actions, events)
-- `arena-engine`: match orchestration and combat resolution
-- `arena-fighter`: bot service (one instance per fighter)
+- [`arena-domain`](arena-domain): shared domain model (fighters, actions, events)
+- [`arena-engine`](arena-engine): match orchestration and combat resolution
+- [`arena-fighter`](arena-fighter): bot service (one instance per fighter)
 
 Reference modules (workshop helpers):
 
-- `arena-replay-cli`: replay/logging consumer
-- `arena-observer-gateway`: websocket spectator gateway
-- `arena-tui-cli`: terminal match visualization
+- [`arena-replay-cli`](arena-replay-cli): replay/logging consumer
+- [`arena-observer-gateway`](arena-observer-gateway): websocket spectator gateway
+- [`arena-tui-cli`](arena-tui-cli): terminal match visualization
 
 ## Get Started
 
@@ -45,13 +45,13 @@ Useful local URLs:
 
 ## Next Docs
 
-- Canonical local runbook: `docs/quickstart.md`
-- Workshop flow and exercises: `docs/hackathon-exercises.md`
-- Event model/contracts: `docs/event-model.md`
-- Game rules: `docs/game-rules.md`
-- Docs index: `docs/README.md`
-- Contributor conventions: `AGENTS.md`
+- Canonical local runbook: [`docs/quickstart.md`](docs/quickstart.md)
+- Workshop flow and exercises: [`docs/hackathon-exercises.md`](docs/hackathon-exercises.md)
+- Event model/contracts: [`docs/event-model.md`](docs/event-model.md)
+- Game rules: [`docs/game-rules.md`](docs/game-rules.md)
+- Docs index: [`docs/README.md`](docs/README.md)
+- Contributor conventions: [`AGENTS.md`](AGENTS.md)
 
 ## License
 
-This project is licensed under the Apache License 2.0. See `LICENSE`.
+This project is licensed under the Apache License 2.0. See [`LICENSE`](LICENSE).
