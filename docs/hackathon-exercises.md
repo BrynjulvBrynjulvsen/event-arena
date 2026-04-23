@@ -10,6 +10,12 @@ Use this as the single exercise menu and execution guide for Event Arena.
 - Pick one main exercise and one hardening angle.
 - Recommended timebox: 2-4 hours.
 
+## Scope Clarity
+
+- Participant exercise work: modify whatever modules your exercise needs on your branch; optimize for learning and a clear demo.
+- Workshop baseline evolution (maintainers): prefer additive changes, usually via new or reference modules first.
+- For baseline changes, touch core modules (`arena-engine`, `arena-domain`, core contracts) only when the goal is an explicit authoritative behavior/contract change.
+
 ## Workshop Flow
 
 1. **Bootstrap runtime**
@@ -45,6 +51,7 @@ Use this as the single exercise menu and execution guide for Event Arena.
 | 8) Turn Phase Clarity | Advanced | 3-4h | High | Medium |
 | 9) Targeted Commands | Advanced | 3-4h | High | High |
 | 10) Snapshot Stream Onboarding | Advanced | 3-4h | High | Medium |
+| 11) Engine Crash Recovery + Match Takeover | Advanced | 4-6h | Very High | High |
 
 ## 1) Human-Piloted Fighter + UI
 
@@ -265,6 +272,53 @@ Confirm Prometheus shows `arena-observer-gateway` as `DOWN`.
   - Produce snapshots for one match.
   - Rebuild current state from snapshots.
   - Verify authoritative streams still define final truth.
+
+## 11) Reliability Hardening: Engine Crash Recovery + Match Takeover
+
+- **Level**: Advanced
+- **Estimated time**: 4-6 hours
+- **Prerequisites**: shared baseline prerequisites, plus strong understanding of lifecycle/event semantics and idempotent processing.
+- **Current behavior to acknowledge explicitly**: Today, active matches are kept in memory inside the engine process. If the engine stops mid-match, that in-flight match does not continue automatically after restart.
+- **What**: Make in-flight matches recoverable across engine restarts and allow safe takeover by a new engine instance.
+- **How**: Introduce durable match state recovery and single-owner turn resolution per `matchId`.
+- **Why**: Practices real event-driven reliability boundaries (durability, ownership, idempotency, replay safety).
+- **Where to start**: `arena-engine/src/main/kotlin/io/practicegroup/arena/engine/MatchOrchestrator.kt`, `arena-engine/src/main/kotlin/io/practicegroup/arena/engine/logic/MatchState.kt`, `arena-engine/src/main/kotlin/io/practicegroup/arena/engine/logic/TurnResolver.kt`, `docs/event-model.md`
+- **Minimum scope**:
+  - Detect/recover previously active matches after engine restart.
+  - Resume turn progression without creating duplicate turn outcomes for the same `matchId` + `turn`.
+  - Show at least one match survives an engine restart during live execution.
+- **Stretch scope**:
+  - Multi-engine scenario with deterministic ownership/takeover (`lease`/`lock` per match).
+  - Automatic stale-owner detection and reassignment.
+  - Recovery latency metric and takeover audit events.
+- **Done when**: Stopping engine mid-match and starting a new engine instance allows match completion with no duplicate authoritative turn facts.
+- **Demo checklist**:
+  - Start a match and capture `matchId`.
+  - Stop engine while match is in progress.
+  - Start engine again (same or new instance).
+  - Show match continues and reaches `MatchEnded`.
+  - Show no duplicate turn-close / action-resolved facts for the same turn.
+
+### Hint Patterns (Choose One Or Combine)
+
+1. **Snapshot + event replay hybrid**
+   - Persist periodic match snapshots.
+   - On restart, load latest snapshot and replay subsequent authoritative events.
+2. **Compacted state topic**
+   - Publish per-match state envelopes keyed by `matchId` to a compacted topic.
+   - Rehydrate active state from latest compacted records at startup.
+3. **External state store with ownership lease**
+   - Keep active match state in a DB/kv store.
+   - Use a lease/heartbeat field so only one engine resolves turns for each match.
+4. **Idempotent turn resolution contract**
+   - Treat `(matchId, turn)` as idempotency key.
+   - Ensure repeated recovery attempts cannot emit conflicting authoritative facts.
+
+Guardrails:
+
+- Keep command topics as intent-only; do not treat commands as authoritative history.
+- Keep `arena.match-lifecycle.v1` and `arena.match-events.v1` as source of truth.
+- Preserve additive schema evolution if new recovery/ownership events are introduced.
 
 ## Optional Bonus Ideas
 
