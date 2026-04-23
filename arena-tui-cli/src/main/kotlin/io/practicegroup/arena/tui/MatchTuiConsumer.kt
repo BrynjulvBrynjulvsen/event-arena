@@ -13,17 +13,18 @@ import java.util.concurrent.ConcurrentHashMap
 @Component
 class MatchTuiConsumer(
     private val objectMapper: ObjectMapper,
-    @Value("\${arena.tui.board-width:7}") private val boardWidthDefault: Int,
-    @Value("\${arena.tui.board-height:5}") private val boardHeightDefault: Int,
-    @Value("\${arena.tui.match-id:}") private val configuredMatchId: String
+    @Value($$"${arena.tui.board-width:7}") private val boardWidthDefault: Int,
+    @Value($$"${arena.tui.board-height:5}") private val boardHeightDefault: Int,
+    @Value($$"${arena.tui.match-id:}") private val configuredMatchId: String
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
+    private val pinnedMatchId = configuredMatchId.ifBlank { null }
     private val stateByMatch = ConcurrentHashMap<String, RenderState>()
     @Volatile
-    private var activeMatchId: String? = configuredMatchId.ifBlank { null }
+    private var activeMatchId: String? = pinnedMatchId
 
-    @KafkaListener(topics = ["\${arena.kafka.topic}"])
-    fun onEvent(record: ConsumerRecord<String, Any>) {
+    @KafkaListener(topics = [$$"${arena.kafka.topic}"])
+    fun onMatchEvent(record: ConsumerRecord<String, Any>) {
         runCatching {
             val matchId = record.key() ?: return
             if (activeMatchId == null) {
@@ -151,6 +152,59 @@ class MatchTuiConsumer(
         }
     }
 
+    @KafkaListener(topics = [$$"${arena.kafka.lifecycle-topic}"])
+    fun onLifecycleEvent(record: ConsumerRecord<String, Any>) {
+        runCatching {
+            val matchId = record.key() ?: return
+            val event = toJson(record.value())
+            val eventType = event.path("eventType").asString("unknown")
+            val turn = event.path("turn").asInt(-1)
+            val payload = event.path("payload")
+
+            when (eventType) {
+                "MatchStarted" -> {
+                    if (pinnedMatchId != null && pinnedMatchId != matchId) {
+                        return
+                    }
+
+                    activateMatch(matchId)
+                    val state = stateByMatch.computeIfAbsent(matchId) { newRenderState() }
+                    state.lastEvent = "Turn $turn: match started"
+                    render(matchId, state)
+                }
+
+                "TurnOpened" -> {
+                    if (activeMatchId == null) {
+                        activeMatchId = matchId
+                    }
+                    if (activeMatchId != matchId) {
+                        return
+                    }
+
+                    val state = stateByMatch.computeIfAbsent(matchId) { newRenderState() }
+                    val boardWidth = payload.path("boardWidth").asInt(-1)
+                    val boardHeight = payload.path("boardHeight").asInt(-1)
+                    if (boardWidth > 0) {
+                        state.width = boardWidth
+                    }
+                    if (boardHeight > 0) {
+                        state.height = boardHeight
+                    }
+                    state.lastEvent = "Turn $turn: turn opened"
+                    render(matchId, state)
+                }
+            }
+        }.onFailure { ex ->
+            log.error("Failed to process TUI lifecycle event", ex)
+        }
+    }
+
+    internal fun currentMatchId(): String? = activeMatchId
+
+    internal fun trackedMatchIds(): Set<String> = stateByMatch.keys.toSet()
+
+    internal fun entityIds(matchId: String): Set<String> = stateByMatch[matchId]?.entities?.keys?.toSet() ?: emptySet()
+
     private fun render(matchId: String, state: RenderState) {
         val width = state.width
         val height = state.height
@@ -255,6 +309,21 @@ class MatchTuiConsumer(
             return null
         }
         return Pos(node.path("x").asInt(), node.path("y").asInt())
+    }
+
+    private fun activateMatch(matchId: String) {
+        val previousMatchId = activeMatchId
+        activeMatchId = matchId
+        if (previousMatchId != null && previousMatchId != matchId) {
+            stateByMatch.remove(previousMatchId)
+        }
+    }
+
+    private fun newRenderState(): RenderState {
+        return RenderState(
+            width = boardWidthDefault,
+            height = boardHeightDefault
+        )
     }
 }
 

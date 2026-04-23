@@ -16,8 +16,8 @@ import java.util.concurrent.ConcurrentHashMap
 @Component
 class ReplayConsumer(
     private val mapper: ObjectMapper,
-    @Value("\${arena.replay.checkpoint-file:.demo/replay-checkpoint.json}") checkpointFilePath: String,
-    @Value("\${arena.replay.max-event-id-cache:20000}") private val maxEventIdCache: Int
+    @Value($$"${arena.replay.checkpoint-file:.demo/replay-checkpoint.json}") checkpointFilePath: String,
+    @Value($$"${arena.replay.max-event-id-cache:20000}") private val maxEventIdCache: Int
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     private val stateLock = Any()
@@ -42,7 +42,7 @@ class ReplayConsumer(
         )
     }
 
-    @KafkaListener(topics = ["\${arena.kafka.topic}"])
+    @KafkaListener(topics = [$$"${arena.kafka.topic}"])
     fun onEvent(record: ConsumerRecord<String, Any>) {
         runCatching {
             val key = record.key() ?: "no-key"

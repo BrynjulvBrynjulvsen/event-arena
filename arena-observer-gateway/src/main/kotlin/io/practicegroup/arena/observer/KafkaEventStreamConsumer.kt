@@ -29,7 +29,7 @@ class KafkaEventStreamConsumer(
             .description("Consumed records dropped because matchId key was missing")
             .register(meterRegistry)
 
-    @KafkaListener(topics = ["\${arena.kafka.match-events-topic}", "\${arena.kafka.lifecycle-topic}"])
+    @KafkaListener(topics = [$$"${arena.kafka.match-events-topic}", $$"${arena.kafka.lifecycle-topic}"])
     fun onEvent(record: ConsumerRecord<String, Any>) {
         val topic = record.topic()
         meterRegistry.counter("arena.observer.events.consumed", "topic", topic).increment()

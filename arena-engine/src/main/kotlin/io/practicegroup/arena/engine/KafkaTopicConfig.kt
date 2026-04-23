@@ -10,7 +10,7 @@ import org.springframework.kafka.config.TopicBuilder
 class KafkaTopicConfig {
     @Bean
     fun matchEventsTopic(
-        @Value("\${arena.kafka.topic}") topicName: String
+        @Value($$"${arena.kafka.topic}") topicName: String
     ): NewTopic {
         return TopicBuilder.name(topicName)
             .partitions(6)
@@ -20,7 +20,7 @@ class KafkaTopicConfig {
 
     @Bean
     fun lifecycleTopic(
-        @Value("\${arena.kafka.lifecycle-topic}") topicName: String
+        @Value($$"${arena.kafka.lifecycle-topic}") topicName: String
     ): NewTopic {
         return TopicBuilder.name(topicName)
             .partitions(6)
