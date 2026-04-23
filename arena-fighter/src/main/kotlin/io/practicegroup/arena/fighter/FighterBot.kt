@@ -16,12 +16,12 @@ import tools.jackson.databind.ObjectMapper
 class FighterBot(
     private val objectMapper: ObjectMapper,
     private val kafkaTemplate: KafkaTemplate<Any, Any>,
-    @Value("\${arena.fighter.id}") private val fighterId: String,
-    @Value("\${arena.kafka.lifecycle-topic}") private val lifecycleTopic: String
+    @Value($$"${arena.fighter.id}") private val fighterId: String,
+    @Value($$"${arena.kafka.lifecycle-topic}") private val lifecycleTopic: String
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    @KafkaListener(topics = ["\${arena.kafka.lifecycle-topic}"])
+    @KafkaListener(topics = [$$"${arena.kafka.lifecycle-topic}"])
     fun onLifecycle(record: ConsumerRecord<String, Any>) {
         val event = toJsonNode(record.value())
         if (event.path("eventType").asString() != "TurnOpened") {
@@ -61,7 +61,7 @@ class FighterBot(
         log.info("fighter={} lifecycle={} matchId={} turn={} -> action={}", fighterId, lifecycleTopic, matchId, turn, action)
     }
 
-    @KafkaListener(topics = ["\${arena.fighter.feedback-topic}"])
+    @KafkaListener(topics = [$$"${arena.fighter.feedback-topic}"])
     fun onFeedback(record: ConsumerRecord<String, Any>) {
         val event = toJsonNode(record.value())
         val payload = event.path("payload")

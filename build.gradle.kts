@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+
 plugins {
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.spring) apply false
@@ -11,5 +13,15 @@ allprojects {
     repositories {
         mavenCentral()
         maven("https://packages.confluent.io/maven/")
+    }
+}
+
+subprojects {
+    pluginManager.withPlugin("org.jetbrains.kotlin.jvm") {
+        tasks.withType<KotlinJvmCompile>().configureEach {
+            compilerOptions {
+                freeCompilerArgs.add("-Xannotation-default-target=param-property")
+            }
+        }
     }
 }

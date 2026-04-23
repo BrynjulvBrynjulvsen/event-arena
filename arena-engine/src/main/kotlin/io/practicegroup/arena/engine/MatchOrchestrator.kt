@@ -39,11 +39,11 @@ class MatchOrchestrator(
     private val arenaEventPublisher: ArenaEventPublisher,
     private val objectMapper: ObjectMapper,
     private val meterRegistry: MeterRegistry,
-    @Value("\${arena.kafka.topic}") private val matchEventsTopic: String,
-    @Value("\${arena.kafka.lifecycle-topic}") private val lifecycleTopic: String,
-    @Value("\${arena.turn.duration-ms:1000}") private val turnDurationMs: Long,
-    @Value("\${arena.board.width:7}") private val boardWidth: Int,
-    @Value("\${arena.board.height:5}") private val boardHeight: Int
+    @Value($$"${arena.kafka.topic}") private val matchEventsTopic: String,
+    @Value($$"${arena.kafka.lifecycle-topic}") private val lifecycleTopic: String,
+    @Value($$"${arena.turn.duration-ms:1000}") private val turnDurationMs: Long,
+    @Value($$"${arena.board.width:7}") private val boardWidth: Int,
+    @Value($$"${arena.board.height:5}") private val boardHeight: Int
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     private val clock: Clock = Clock.systemUTC()
@@ -146,7 +146,7 @@ class MatchOrchestrator(
         )
     }
 
-    @KafkaListener(topicPattern = "\${arena.kafka.action-topic-pattern}", groupId = "arena-engine")
+    @KafkaListener(topicPattern = $$"${arena.kafka.action-topic-pattern}", groupId = "arena-engine")
     fun onFighterAction(record: ConsumerRecord<String, Any>) {
         val command = parseActionCommand(record.value()) ?: return
         val state = matches[command.matchId]
@@ -199,7 +199,7 @@ class MatchOrchestrator(
         }
     }
 
-    @Scheduled(fixedDelayString = "\${arena.turn.tick-check-ms:100}")
+    @Scheduled(fixedDelayString = $$"${arena.turn.tick-check-ms:100}")
     fun resolveExpiredTurns() {
         val now = now()
         matches.values.forEach { state ->

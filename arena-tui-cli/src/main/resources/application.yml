@@ -1,6 +1,7 @@
 arena:
   kafka:
     topic: arena.match-events.v1
+    lifecycle-topic: arena.match-lifecycle.v1
   tui:
     board-width: 7
     board-height: 5
