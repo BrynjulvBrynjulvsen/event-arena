@@ -16,7 +16,14 @@ Reference modules (workshop helpers):
 
 - [`arena-replay-cli`](arena-replay-cli): replay/logging consumer
 - [`arena-observer-gateway`](arena-observer-gateway): websocket spectator gateway
-- [`arena-tui-cli`](arena-tui-cli): terminal match visualization
+- [`arena-tui-cli`](arena-tui-cli): simple Spring Boot terminal match visualization
+- [`arena-tui-mordant`](arena-tui-mordant): richer standalone terminal dashboard with multi-match viewing
+
+Run the Mordant dashboard in a normal terminal with:
+
+```bash
+./scripts/run-tui-mordant.sh
+```
 
 ## Get Started
 
